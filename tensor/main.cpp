@@ -3,7 +3,13 @@
 
 int main()
 {
-	Matrix<double, DIM> M1(1);
+	//std::shared_ptr<Matrix<double, DIM>> basis (new Matrix<double, DIM>);
+	Tensor<double> T1;
+
+	Matrix<double, DIM> M1(MATRIXINITTYPE::INDENT);
+	Tensor<double> T2(MATRIXINITTYPE::INDENT, T1.get_basis());
+
+	T2 *= T1;
 	Matrix<double, DIM> M2(2);
 	Matrix<double, DIM> M3;
 	M3 = M2 - M1;
