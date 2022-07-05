@@ -8,46 +8,101 @@
 template<typename T>
 class Tensor : public Matrix<T, DIM>
 {
-	std::shared_ptr<const Matrix<T, DIM>> basis;
-	bool BASISOWNER;
+	std::shared_ptr<const Tensor<T>> basis;
 public:
 	~Tensor() {
 		basis.reset();
 	}
 
-	std::shared_ptr<const Matrix<T, DIM>> get_basis() { return basis; };
+	virtual Tensor& operator = (const Tensor& t);
+	virtual Tensor  operator + (const Tensor& t) const;
+	virtual Tensor  operator - (const Tensor& t) const;
+	virtual Tensor  operator * (const Tensor& t) const;
+	virtual Tensor& operator +=(const Tensor& t);
+	virtual Tensor& operator -=(const Tensor& t);
+	virtual Tensor  operator *=(const Tensor& t);
+	//virtual bool  operator ==(const Tensor& t) const;
 
-	Matrix<T, DIM>& get_component_basis(const std::shared_ptr<const Matrix<T, DIM>>& _basis) const;
+	std::shared_ptr<const Tensor<T>> get_basis() const { return basis; };
 
-	Tensor(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : Matrix<T, DIM>(IT)
+	Matrix<T, DIM> calc_comp_at_basis(/*Matrix<T, DIM>& comp_at_terget_basis,*/ const Tensor<T>& target_basis) const;
+	void move_to_basis(/*Matrix<T, DIM>& comp_at_terget_basis,*/ const Tensor<T>& target_basis);
+
+	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : Matrix<T, DIM>(IT)
 	{
-		BASISOWNER = true;
-		basis = std::shared_ptr<const Matrix<T, DIM>>(new Matrix<double, DIM>(MATRIXINITTYPE::INDENT));
+		basis = _basis.get_basis();
+		const Tensor<double>* bs = basis.get();
 	}
 
-	Tensor(MATRIXINITTYPE IT, const std::shared_ptr<const Matrix<T, DIM>>& _basis) : Matrix<T, DIM>(IT)
+	Tensor(MATRIXINITTYPE IT = MATRIXINITTYPE::INDENT) : Matrix<T, DIM>(IT)
 	{
-		BASISOWNER = false;
-		basis = _basis;
-		//const Matrix<double, DIM>* bs = basis.get();
+		basis = nullptr;
 	}
+
 };
 
 
 template<typename T>
-Matrix<T, DIM>& Tensor<T>::get_component_basis(const std::shared_ptr<const Matrix<T, DIM>>& target_basis_shared) const
+Tensor<T>& Tensor<T>::operator = (const Tensor<T>& t)
 {
-//	if (target_basis_shared == nullptr)        throw std::invalid_argument("null shared pointer to basis");
+	Matrix<T, DIM>::copy(t);
+	basis = t.basis;
+	return *this;
+};
 
-	const Matrix<T, DIM>* target_basis = target_basis_shared.get();
-	if (target_basis == nullptr) throw std::invalid_argument("null  pointer to basis");
 
-	Matrix<T, DIM> comp_at_terget_basis((T)0);
-	const Matrix<T, DIM>* current_basis = basis->get();
-	if (current_basis == target_basis)
+template<typename T>
+Tensor<T>  Tensor<T>::operator + (const Tensor<T>& t) const
+{
+	t.calc_comp_at_basis(*this);
+	Tensor<T> res;
+	return res;
+}
+template<typename T>					
+Tensor<T>  Tensor<T>::operator - (const Tensor<T>& t) const 
+{
+	Tensor<T> res;
+	return res;
+
+}
+template<typename T>					
+Tensor<T>  Tensor<T>::operator * (const Tensor<T>& t) const
+{
+
+	Tensor<T> res;
+	return res;
+}
+template<typename T>					
+Tensor<T>& Tensor<T>::operator +=(const Tensor<T>& t)
+{
+	return *this;
+}
+template<typename T>					
+Tensor<T>& Tensor<T>::operator -=(const Tensor<T>& t)
+{
+	return *this;
+}
+template<typename T>					
+Tensor<T>  Tensor<T>::operator *=(const Tensor<T>& t)
+{
+	Tensor<T> res;
+	return res;
+}
+
+/* return components of this in target basis*/
+template<typename T>
+Matrix<T, DIM> Tensor<T>::calc_comp_at_basis(//(Matrix<T, DIM> & comp_at_terget_basis,
+	    const Tensor<T>& target) const
+{
+	Matrix<T, DIM> comp_at_terget_basis = (T)0;
+
+	const auto target_basis = target.get_basis();
+	if (basis == target_basis)
 		comp_at_terget_basis = *this;
 	else
 	{
 		//comp_at_terget_basis = *this * 
 	}
+
+	return comp_at_terget_basis;
 }
