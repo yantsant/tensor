@@ -1,5 +1,6 @@
 #pragma once
 #include "matrix.h"
+#include "quat.h"
 
 
 //template <typename T>
@@ -25,8 +26,8 @@ public:
 
 	std::shared_ptr<const Tensor<T>> get_basis() const { return basis; };
 
-	Matrix<T, DIM> calc_comp_at_basis(/*Matrix<T, DIM>& comp_at_terget_basis,*/ const Tensor<T>& target_basis) const;
-	void move_to_basis(/*Matrix<T, DIM>& comp_at_terget_basis,*/ const Tensor<T>& target_basis);
+	Matrix<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
+	void move_to_basis( const Tensor<T>& target_basis);
 
 	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : Matrix<T, DIM>(IT)
 	{
@@ -91,8 +92,7 @@ Tensor<T>  Tensor<T>::operator *=(const Tensor<T>& t)
 
 /* return components of this in target basis*/
 template<typename T>
-Matrix<T, DIM> Tensor<T>::calc_comp_at_basis(//(Matrix<T, DIM> & comp_at_terget_basis,
-	    const Tensor<T>& target) const
+Matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
 {
 	Matrix<T, DIM> comp_at_terget_basis = (T)0;
 
@@ -101,6 +101,17 @@ Matrix<T, DIM> Tensor<T>::calc_comp_at_basis(//(Matrix<T, DIM> & comp_at_terget_
 		comp_at_terget_basis = *this;
 	else
 	{
+		if (target_basis == nullptr)
+		{
+			const Matrix<T, DIM> &op = basis.get()->ref();
+			//const Matrix<T, DIM> &opm = opt->ref();
+			Matrix<T, DIM> x;
+			Matrix<T, DIM>::right_transform(op, x);
+		}
+		else
+		{
+
+		}
 		//comp_at_terget_basis = *this * 
 	}
 

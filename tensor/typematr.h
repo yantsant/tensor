@@ -4,7 +4,6 @@
 #include <array>
 #include <iostream>
 
-const char DIM = 3;
 
 template <typename T, size_t N>
 using matr = std::array<std::array<T, N>, N>;
@@ -111,7 +110,7 @@ namespace matrix_operator
 	inline matr<type, N> t(const matr<type, N>& m)
 	{
 		matr<type, N> newm(m);
-		T(newm);
+		t(newm);
 		return newm;
 	}
 
@@ -173,16 +172,28 @@ namespace matrix_operator
 
 		return res;
 	}
+	template<typename T, std::size_t N>
+	inline void dotdott(const matr<T, N>& lhs, const matr<T, N>& rhs, matr<T, N>& res)
+	{
+		res = lhs * rhs;
+		res *= t(lhs);
+	}
 
 	// lhs^T . rhs . lhs
 	template<typename T, std::size_t N>
 	inline matr<T, N> tdotdot(const matr<T, N>& lhs, const matr<T, N>& rhs)
 	{
 		matr<T, N> res;
-
+	
 		res = t(lhs) * rhs;
 		res *= lhs;
-
+	
 		return res;
+	}
+	template<typename T, std::size_t N>
+	inline void tdotdot(const matr<T, N>& lhs, const matr<T, N>& rhs, matr<T, N>& res)
+	{
+		res = t(lhs) * rhs;
+		res *= lhs;
 	}
 }

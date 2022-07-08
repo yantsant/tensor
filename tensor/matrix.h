@@ -1,11 +1,24 @@
 #pragma once
 
-#include "type.h"
+#include "typematr.h"
+#include "vect.h"
+#include <random>
+const char DIM = 3;
 enum class MATRIXINITTYPE
 {
 	ZERO,
 	INDENT
 };
+//const std::mt19937 random_engine;
+//const std::random_device rd;
+//
+//template<typename T>
+//const std::uniform_real_distribution<T> unidistr = std::uniform_real_distribution<T>((T)0, (T)1);
+//
+//template<typename T>
+//T get_uniform_value() { 
+//	return unidistr<T>(random_engine); 
+//};
 
 template<typename T, std::size_t N>
 class Matrix
@@ -29,10 +42,10 @@ public:
 	void   scal_transp(const Matrix& rhs, Matrix& res);
 	Matrix transp_scal(const Matrix& rhs);
 	void   transp_scal(const Matrix& rhs, Matrix& res);
-	Matrix left_transform(const Matrix& rhs);
-	void   left_transform(const Matrix& rhs, Matrix& res);
-	Matrix right_transform(const Matrix& rhs);
-	void   right_transform(const Matrix& rhs, Matrix& res);
+	Matrix left_transform (const Matrix& op)  const;
+	void   left_transform (const Matrix& op, Matrix& res)  const;
+	Matrix right_transform(const Matrix& op) const;
+	void   right_transform(const Matrix& op, Matrix& res) const;
 
 	void     operator = (const double vl) {
 		for (size_t row = 0; row < N; row++)
@@ -42,6 +55,7 @@ public:
 
 	//Matrix& operator = (const Matrix& m);
 	void copy(const Matrix& m);
+	const   Matrix& ref() const { return *this; };
 	virtual Matrix& operator = (const Matrix& m);
 	virtual Matrix  operator + (const Matrix& m) const;
 	virtual Matrix  operator - (const Matrix& m) const;
@@ -105,30 +119,30 @@ void Matrix<T, N>::transp_scal(const Matrix& rhs, Matrix& res)
 
 // op . this . op^T
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::left_transform(const Matrix& op)
+Matrix<T, N> Matrix<T, N>::left_transform(const Matrix& op) const
 {
-	Matrix<T, N> res(*this);
-	matrix_operator::dotdott(op.comp, comp, res);
+	Matrix<T, N> res;
+	res.comp = matrix_operator::dotdott(op.comp, comp);
 	return res;
 }
 template<typename T, std::size_t N>
-void Matrix<T, N>::left_transform(const Matrix& op, Matrix& res)
+void Matrix<T, N>::left_transform(const Matrix& op, Matrix& res) const
 {
-	matrix_operator::dotdott(op.comp, comp, res);
+	matrix_operator::dotdott(op.comp, comp, res.comp);
 }
 
 // op^T . this . op
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::right_transform(const Matrix& op)
+Matrix<T, N> Matrix<T, N>::right_transform(const Matrix& op) const
 {
-	Matrix<T, N> res(*this);
-	matrix_operator::tdotdot(op.comp, comp, res);
+	Matrix<T, N> res;
+	res.comp = matrix_operator::tdotdot(op.comp, comp);
 	return res;
 }
 template<typename T, std::size_t N>
-void Matrix<T, N>::right_transform(const Matrix& op, Matrix& res)
+void Matrix<T, N>::right_transform(const Matrix& op, Matrix& res) const
 {
-	matrix_operator::tdotdot(op.comp, comp, res);
+	matrix_operator::tdotdot(op.comp, comp, res.comp);
 }
 
 template<typename T, std::size_t N>
