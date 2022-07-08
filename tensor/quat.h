@@ -1,36 +1,37 @@
 #pragma once
 
 template<typename T>
-class quat : public vect<T, 4>
+class quat : public arr<T, 4>
 {
 public:
 	quat();// { *this = (T)0;  this->set(0, 1); };
 	quat(const quat& q);
-	quat(const vect<T, 4>& q);
-	quat(const T& re, const vect<T, 3>& im);// { this->set(0, re); Im = im; Im.normalize(); };
+	quat(const arr<T, 4>& q);
+	quat(const T& re, const arr<T, 3>& im);// { this->set(0, re); Im = im; Im.normalize(); };
 	~quat() {};
-	void set_im(const vect<T, 3>& im);
+	void set_im(const arr<T, 3>& im);
 
 
-	inline vect<T, 4>& operator()() { return *this; };
-	inline quat& operator = (const vect<T, 4>& v);
+	inline arr<T, 4>& operator()() { return *this; };
+	inline quat& operator = (const arr<T, 4>& v);
 	inline quat operator * (const quat& rhs) const;
 	inline quat operator * (const T& mult) const;
 	inline quat& operator *=(const T& mult);
 private:
 	inline vect<T, 3> im() const;
+	//inline arr <T, 3> im() const;
 	inline T re() const;
 };
 
 
 
 template<typename T>
-quat<T>::quat() : vect<T, 4> ((T)0) { 
+quat<T>::quat() : arr<T, 4> ((T)0) {
 	this->set(0, 1);
 }; 
 
 template<typename T>
-quat<T>::quat(const T& re, const vect<T, 3>& im) {
+quat<T>::quat(const T& re, const arr<T, 3>& im) {
 	this->set(0, re);
 	set_im(im);
 	this->normalize();
@@ -45,13 +46,13 @@ quat<T>::quat(const quat& q ) {;
 
 
 template<typename T>
-quat<T>::quat(const vect<T, 4>& v) {
+quat<T>::quat(const arr<T, 4>& v) {
 	(*this) = v;
 	this->normalize();
 };
 
 template<typename T>
-inline void quat<T>::set_im(const vect<T, 3>& im)
+inline void quat<T>::set_im(const arr<T, 3>& im)
 {
 	vect<T, 3> res;
 	const vect<T, 4>& v = (*this);
@@ -80,10 +81,10 @@ inline T quat<T>::re() const
 
 
 template<typename T>
-inline quat<T>& quat<T>::operator = (const vect<T, 4>& v)
+inline quat<T>& quat<T>::operator = (const arr<T, 4>& v)
 {
 	//vect<T, 4> vv = (*this)();
-	return static_cast<quat<T>&>(vect<T, 4>::operator=(v));
+	return static_cast<quat<T>&>(arr<T, 4>::operator=(v));
 }
 
 

@@ -6,24 +6,29 @@ int main()
 {
 	vect<double, 3> v1 = -1;
 	vect<double, 3> v2 = 2;
-	auto vv1 = v1();
-	quat<double> q0;
-	quat<double> q1(0.1, v1);
-	quat<double> q2(-0.3, v2);
-	quat<double> q3(0.3, v2);
-	quat<double> q4(q3);
-	//vect<double, 4> v4;
-	//q1 = v4;
-	v1 = v2 + v2;
-	q3 = q1;
-	q2 = q1 * 0.5;
-	q3 = q1 + q2;
-	//auto v4 = q.quat_as_4_vector();
-
-	vect<double, 3> v3 = 0;
-	double value = v1.get(1);
+	vect<double, 3> v3;
+	v1 = 1.4;
+	std::cout << v1;
+	//v3 = v1 + v2;
 	v3 = v1 + v2;
-	v2 = v1;
+	v1.vector_product(v2);
+//	quat<double> q0;
+//	quat<double> q1(0.1, v1);
+//	quat<double> q2(-0.3, v2);
+//	quat<double> q3(0.3, v2);
+//	quat<double> q4(q3);
+//	//vect<double, 4> v4;
+//	//q1 = v4;
+//	v1 = v2 + v2;
+//	q3 = q1;
+//	q2 = q1 * 0.5;
+//	q3 = q1 + q2;
+//	//auto v4 = q.quat_as_4_vector();
+//
+//	vect<double, 3> v3 = 0;
+//	double value = v1.get(1);
+//	v3 = v1 + v2;
+//	v2 = v1;
 	//std::cout << v;
 //	std::array<double, 3> x;
 //	std::array<double, 3> y;
