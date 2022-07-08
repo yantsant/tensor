@@ -145,6 +145,7 @@
     <ClCompile Include="tensor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="array.h" />
     <ClInclude Include="quat.h" />
     <ClInclude Include="tensor.h" />
     <ClInclude Include="typematr.h" />
