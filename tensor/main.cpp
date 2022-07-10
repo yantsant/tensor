@@ -2,8 +2,26 @@
 
 #include "vect.h"
 #include "quat.h"
+#include "matrix.h"
 int main()
 {
+
+	matrix<double, 3> m0 (MATRIXINITTYPE::ZERO);
+	matrix<double, 3> m1 (MATRIXINITTYPE::INDENT);
+	matrix<double, 3> m2 = m1;
+	transpose(m1);
+	m1.transpose();
+	std::cout << m1;
+	m2 = 1.0;
+	m2 += m1;
+	m2 -= m1;
+	m1 *= 3.0;
+	matrix<double, 3> m3 = m2 - m1*3;
+	std::array<std::array<double, 3>, 3> res = m3();
+	m0 = res;
+	m3 = m2 * m2;
+	matrix<double, 3> m4(MATRIXINITTYPE::INDENT);
+	m4 = m3.transform(TRANSPOSE::FALSE, m2, TRANSPOSE::TRUE);
 	vect<double, 3> v1 = -1;
 	vect<double, 3> v2 = 2;
 	vect<double, 3> v3;

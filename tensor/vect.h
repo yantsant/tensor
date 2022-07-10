@@ -11,6 +11,7 @@ public:
 	explicit vect() {};
 	vect(T val) : arr<T, N>(val) {};
 	inline arr<T, N>& operator()() { return *this; };
+	operator arr<T, N>() const { return *this; };
 	inline vect& operator = (const arr<T, N>& m);
 	inline static vect vector_product(const vect& lhs, const vect& rhs);
 	inline vect vector_product(const vect& rhs) const;

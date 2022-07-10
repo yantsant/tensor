@@ -148,7 +148,6 @@
     <ClInclude Include="array.h" />
     <ClInclude Include="quat.h" />
     <ClInclude Include="tensor.h" />
-    <ClInclude Include="typematr.h" />
     <ClInclude Include="vect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

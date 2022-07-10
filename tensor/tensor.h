@@ -4,16 +4,14 @@
 
 
 //template <typename T>
-//using shrptr = std::shared_ptr<const Matrix<T, DIM>>;
+//using shrptr = std::shared_ptr<const matrix<T, DIM>>;
 
 template<typename T>
-class Tensor : public Matrix<T, DIM>
+class Tensor : public matrix<T, DIM>
 {
 	std::shared_ptr<const Tensor<T>> basis;
 public:
-	~Tensor() {
-		basis.reset();
-	}
+	~Tensor() { basis.reset(); }
 
 	virtual Tensor& operator = (const Tensor& t);
 	virtual Tensor  operator + (const Tensor& t) const;
@@ -26,16 +24,16 @@ public:
 
 	std::shared_ptr<const Tensor<T>> get_basis() const { return basis; };
 
-	Matrix<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
+	matrix<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
 	void move_to_basis( const Tensor<T>& target_basis);
 
-	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : Matrix<T, DIM>(IT)
+	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : matrix<T, DIM>(IT)
 	{
 		basis = _basis.get_basis();
 		const Tensor<double>* bs = basis.get();
 	}
 
-	Tensor(MATRIXINITTYPE IT = MATRIXINITTYPE::INDENT) : Matrix<T, DIM>(IT)
+	Tensor(MATRIXINITTYPE IT = MATRIXINITTYPE::INDENT) : matrix<T, DIM>(IT)
 	{
 		basis = nullptr;
 	}
@@ -46,7 +44,7 @@ public:
 template<typename T>
 Tensor<T>& Tensor<T>::operator = (const Tensor<T>& t)
 {
-	Matrix<T, DIM>::copy(t);
+	matrix<T, DIM>::copy(t);
 	basis = t.basis;
 	return *this;
 };
@@ -92,9 +90,9 @@ Tensor<T>  Tensor<T>::operator *=(const Tensor<T>& t)
 
 /* return components of this in target basis*/
 template<typename T>
-Matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
+matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
 {
-	Matrix<T, DIM> comp_at_terget_basis = (T)0;
+	matrix<T, DIM> comp_at_terget_basis = (T)0;
 
 	const auto target_basis = target.get_basis();
 	if (basis == target_basis)
@@ -103,10 +101,10 @@ Matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
 	{
 		if (target_basis == nullptr)
 		{
-			const Matrix<T, DIM> &op = basis.get()->ref();
-			//const Matrix<T, DIM> &opm = opt->ref();
-			Matrix<T, DIM> x;
-			Matrix<T, DIM>::right_transform(op, x);
+			const matrix<T, DIM> &op = basis.get()->ref();
+			//const matrix<T, DIM> &opm = opt->ref();
+			matrix<T, DIM> x;
+			matrix<T, DIM>::right_transform(op, x);
 		}
 		else
 		{

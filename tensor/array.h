@@ -7,6 +7,7 @@ class arr : private std::array<T, N>
 public:
 	explicit arr() { *this = (T)0; };
 	arr(T val) { *this = val; };
+	arr(std::array<T, N>& _arr) {(*this) = _arr;};
 
 	void set(size_t idx, const T& value);
 	void set(const arr&);

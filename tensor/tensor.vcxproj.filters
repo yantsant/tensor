@@ -29,9 +29,6 @@
     <ClInclude Include="tensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="typematr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="quat.h">
       <Filter>Header Files</Filter>
     </ClInclude>

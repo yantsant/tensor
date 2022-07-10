@@ -9,6 +9,12 @@ enum class MATRIXINITTYPE
 	ZERO,
 	INDENT
 };
+
+enum class TRANSPOSE
+{
+	TRUE,
+	FALSE
+};
 //const std::mt19937 random_engine;
 //const std::random_device rd;
 //
@@ -20,215 +26,263 @@ enum class MATRIXINITTYPE
 //	return unidistr<T>(random_engine); 
 //};
 
+template<typename T, std::size_t N> class matrix;  // pre-declare the template class itself
+template<typename T, std::size_t N> void _transpose(matrix<T, N>& m);
+template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix<T,N>& m);
+
 template<typename T, std::size_t N>
-class Matrix
+class matrix : private std::array<std::array<T, N>, N>
 {
-//protected:
-	matr<T, N> comp;
+	void set_zero();
 public:
-	Matrix(MATRIXINITTYPE IT);
-	Matrix(T val = (T)0)            {*this = val; };
-	Matrix(const matr<T, N>& _comp) { comp = _comp; }
-	Matrix(const Matrix& _m)        { comp = _m.comp; };
-	Matrix(Matrix&& _m) noexcept    { comp = std::move(_m.comp);};
+	matrix(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
 
+	inline std::array<std::array<T, N>, N> operator()() const { 
+		return static_cast<std::array<std::array<T, N>, N>>(*this); };
 
-	//void   get_components(Matrix& m) const;
-	//Matrix get_components( ) const;
-
-	Matrix transpose();
-	static Matrix transpose(Matrix& m);
-	Matrix scal_transp(const Matrix& rhs);
-	void   scal_transp(const Matrix& rhs, Matrix& res);
-	Matrix transp_scal(const Matrix& rhs);
-	void   transp_scal(const Matrix& rhs, Matrix& res);
-	Matrix left_transform (const Matrix& op)  const;
-	void   left_transform (const Matrix& op, Matrix& res)  const;
-	Matrix right_transform(const Matrix& op) const;
-	void   right_transform(const Matrix& op, Matrix& res) const;
-
-	void     operator = (const double vl) {
+	matrix transpose() const;
+	friend void transpose(matrix& m)
+	{
 		for (size_t row = 0; row < N; row++)
-			for (size_t col = 0; col < N; col++)
-				comp[row][col] = (T)vl;
+			for (size_t col = row + 1; col < N; col++)
+				std::swap(m[row][col], m[col][row]);
 	};
+	matrix scal     (TRANSPOSE left, const matrix& rhs, TRANSPOSE right) const;
+	matrix transform(TRANSPOSE left, const matrix& op , TRANSPOSE right) const;
 
-	//Matrix& operator = (const Matrix& m);
-	void copy(const Matrix& m);
-	const   Matrix& ref() const { return *this; };
-	virtual Matrix& operator = (const Matrix& m);
-	virtual Matrix  operator + (const Matrix& m) const;
-	virtual Matrix  operator - (const Matrix& m) const;
-	virtual Matrix  operator * (const Matrix& m) const;
-	virtual Matrix& operator +=(const Matrix& m);
-	virtual Matrix& operator -=(const Matrix& m);
-	virtual Matrix  operator *=(const Matrix& m);
+	matrix& operator = (const T& vl);
+	matrix& operator = (const std::array<std::array<T, N>, N>& m);
 
+	virtual matrix  operator + (const matrix& m) const;
+	virtual matrix  operator - (const matrix& m) const;
+	virtual matrix  operator * (const matrix& m) const;
+	virtual matrix  operator * (const T& val) const;
+	virtual matrix& operator +=(const matrix& m);
+	virtual matrix& operator -=(const matrix& m);
+	virtual matrix& operator *=(const matrix& m);
+	virtual matrix& operator *=(const T& val);
+
+
+	friend std::ostream& operator<< <>(std::ostream& out, const matrix& a);
 };
 
 
 template<typename T, std::size_t N>
-void Matrix<T, N>::copy(const Matrix& m)
-{
-	comp = m.comp;
-}
-
-template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::transpose()
-{
-	Matrix<T, N> res(*this);
-	matrix_operator::t(res);
-	return res;
-}
-
-// transpose this = this^T
-template<typename T, std::size_t N>
-static Matrix<T, N> Matrix<T, N>::transpose(Matrix& m)
-{
-	matrix_operator::t(m);
-}
-
-// this . rhs^T
-template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::scal_transp(const Matrix& rhs)
-{
-	Matrix<T, N> res(*this);
-	matrix_operator::dott(comp, rhs.comp, res);
-	return res;
-}
-template<typename T, std::size_t N>
-void Matrix<T, N>::scal_transp(const Matrix& rhs, Matrix& res)
-{
-	matrix_operator::dott(comp, rhs.comp, res);
-}
-
-// this^T . rhs
-template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::transp_scal(const Matrix& rhs)
-{
-	Matrix<T, N> res(*this);
-	matrix_operator::tdot(comp, rhs.comp, res);
-	return res;
-}
-template<typename T, std::size_t N>
-void Matrix<T, N>::transp_scal(const Matrix& rhs, Matrix& res)
-{
-	matrix_operator::tdot(comp, rhs.comp, res);
-}
-
-
-// op . this . op^T
-template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::left_transform(const Matrix& op) const
-{
-	Matrix<T, N> res;
-	res.comp = matrix_operator::dotdott(op.comp, comp);
-	return res;
-}
-template<typename T, std::size_t N>
-void Matrix<T, N>::left_transform(const Matrix& op, Matrix& res) const
-{
-	matrix_operator::dotdott(op.comp, comp, res.comp);
-}
-
-// op^T . this . op
-template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::right_transform(const Matrix& op) const
-{
-	Matrix<T, N> res;
-	res.comp = matrix_operator::tdotdot(op.comp, comp);
-	return res;
-}
-template<typename T, std::size_t N>
-void Matrix<T, N>::right_transform(const Matrix& op, Matrix& res) const
-{
-	matrix_operator::tdotdot(op.comp, comp, res.comp);
-}
-
-template<typename T, std::size_t N>
-std::ostream& operator<<(std::ostream& out, const Matrix<T, N>& a)
-{
-	out << a.comp;
+std::ostream& operator<<(std::ostream& out, const matrix<T, N>& a) {
+	for (auto row : a)
+	{
+		for (auto col : row)
+			out << col << " ";
+		out << "\n";
+	}
+	out << "\n";
 	return out;
+};
+
+//template<typename T, std::size_t N>
+//void  transpose(matrix<T, N>& m) {
+//	for (size_t row = 0; row < N; row++)
+//		for (size_t col = row + 1; col < N; col++)
+//			std::swap(m[row][col], m[col][row]);
+//};
+
+template<typename T, std::size_t N>
+void matrix<T, N>::set_zero()
+{
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(*this)[row][col] = (T)0;
 }
 
 
 template<typename T, std::size_t N>
-Matrix<T, N>::Matrix(MATRIXINITTYPE IT)
+matrix<T, N> matrix<T, N>::transpose() const
+{
+	matrix<T, N> res(*this);
+	//transpose(res);
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = row + 1; col < N; col++)
+			std::swap(res[row][col], res[col][row]);
+	return res;
+}
+
+
+
+// this^?l . rhs^?r
+template<typename T, std::size_t N>
+matrix<T, N> matrix<T, N>::scal(TRANSPOSE left, const matrix& rhs, TRANSPOSE right) const
+{
+	if (left == right)
+	{
+		if (left == TRANSPOSE::FALSE)
+			return (*this) * rhs;
+		else
+			return transpose() * rhs;
+	}
+	else
+	{
+		if (left == TRANSPOSE::FALSE)
+			return (*this) * rhs.transpose();
+		else
+			return transpose() * rhs;
+	}
+}
+
+//  op^?l . this . op^?r
+template<typename T, std::size_t N>
+matrix<T, N> matrix<T, N>::transform(TRANSPOSE left, const matrix& op, TRANSPOSE right) const
+{
+	matrix<T, N> opt = op.transpose();
+	if (left == right)
+	{
+		if (left == TRANSPOSE::FALSE)
+			return op * (*this) * op;
+		else
+			return opt * (*this) * opt;
+	}
+	else
+	{
+		if (left == TRANSPOSE::FALSE)
+			return opt * (*this) * op;
+		else
+			return op * (*this) * opt;
+	}
+}
+
+template<typename T, std::size_t N>
+matrix<T, N>::matrix(MATRIXINITTYPE IT)
 {
 	switch (IT)
 	{
 	case MATRIXINITTYPE::ZERO  :
-		*this = (T)0; 
+		set_zero();
 		break;
 	case MATRIXINITTYPE::INDENT:
-		*this = (T)0;
+		set_zero();
 		for (size_t row = 0; row < N; row++) 
-			comp[row][row] = (T)1; 
+			(*this)[row][row] = (T)1; 
 		break;
 	default:
-		*this = (T)0;
+		set_zero();
 		break;
 	}
 }
 
-//template<typename T, std::size_t N>
-//Matrix<T, N>& Matrix<T, N>::operator = (const Matrix<T, N>& m)
-//{
-//	this->comp = m.comp;
-//	return *this;
-//};
- 
 template<typename T, std::size_t N>
-Matrix<T, N>& Matrix<T, N>::operator = (const Matrix<T, N>& m)
+matrix<T, N>& matrix<T, N>::operator = (const T& vl)
 {
-	this->comp = m.comp;
+	T value = (T)vl;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(*this)[row][col] = value;
+	return (*this);
+};
+
+
+template<typename T, std::size_t N>
+matrix<T, N>& matrix<T, N>::operator = (const std::array<std::array<T, N>, N>& m) {
+	(*static_cast<std::array<std::array<T, N>, N>*>(this)) = m;
 	return *this;
 };
 
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::operator + (const Matrix<T, N>& m) const
+matrix<T, N> matrix<T, N>::operator + (const matrix<T, N>& rhs) const
 {
-	Matrix<T, N> newm((T)0);
-	newm.comp = this->comp + m.comp;
-	return newm;// std::move(newm);
+	matrix<T, N> nhs;
+
+	if (N < 1) return nhs;
+
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			nhs[row][col] = (*this)[row][col] + rhs[row][col];
+	return nhs;
 }
 
 template<typename T, std::size_t N>
-Matrix<T, N>& Matrix<T, N>::operator += (const Matrix<T, N>& m)
+matrix<T, N> matrix<T, N>::operator - (const matrix<T, N>& rhs) const
 {
-	this->comp += m.comp;
-	return *this;// std::move(newm);
+	matrix<T, N> nhs;
+
+	if (N < 1) return nhs;
+
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			nhs[row][col] = (*this)[row][col] - rhs[row][col];
+	return nhs;
 }
 
 
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::operator - (const Matrix<T, N>& m) const
+matrix<T, N>& matrix<T, N>::operator += (const matrix<T, N>& rhs)
 {
-	Matrix<T, N> newm((T)0);
-	newm.comp = this->comp - m.comp;
-	return newm;
+	if (N < 1) return *this;
+
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(*this)[row][col] += rhs[row][col];
+	return *this;
 }
 
 
 template<typename T, std::size_t N>
-Matrix<T, N>& Matrix<T, N>::operator -= (const Matrix<T, N>& m)
+matrix<T, N>& matrix<T, N>::operator -= (const matrix<T, N>& rhs)
 {
-	this->comp -= m.comp;
-	return *this;// std::move(newm);
+	if (N < 1) return *this;
+
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(*this)[row][col] -= rhs[row][col];
+	return *this;
 }
 
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::operator * (const Matrix<T, N>& m) const
+matrix<T, N> matrix<T, N>::operator * (const T& val) const
 {
-	Matrix<T, N> newm((T)0);
-	newm.comp = this->comp * m.comp;
-	return newm;
+	matrix<T, N> nhs;
+	if (N < 1) return nhs;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			nhs[row][col] = (*this)[row][col] * val;
+	return nhs;
 }
 
 template<typename T, std::size_t N>
-Matrix<T, N> Matrix<T, N>::operator *= (const Matrix<T, N>& m)
+matrix<T, N> matrix<T, N>::operator * (const matrix<T, N>& rhs) const
 {
-	this->comp *= m.comp;
-	return *this;// std::move(newm);
+	matrix<T, N> nhs;
+	if (N < 1) return nhs;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+		{
+			nhs[row][col] = (T)0;
+			for (size_t i = 0; i < N; i++)
+				nhs[row][col] += (*this)[row][i] * rhs[i][col];
+		}
+	return nhs;
+}
+
+template<typename T, std::size_t N>
+matrix<T, N>& matrix<T, N>::operator *=(const T& val) 
+{
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(*this)[row][col] *= val;
+	return *this;
+}
+
+template<typename T, std::size_t N>
+matrix<T, N>& matrix<T, N>::operator *= (const matrix<T, N>& rhs)
+{
+	if (N < 1) return (*this);
+
+	matrix<T, N> nhs;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+		{
+			nhs[row][col] = (T)0;
+			for (size_t i = 0; i < N; i++)
+				nhs[row][col] += (*this)[row][i] * rhs[i][col];
+		}
+	(*this) = nhs;
+	return (*this);
 }
