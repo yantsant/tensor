@@ -12,7 +12,7 @@ public:
 	quat(const T& re, const arr<T, 3>& im);
 	~quat() {};
 	void set_im(const arr<T, 3>& im);
-	inline vect<T, 3> get_im() const;
+	inline vect_base<T, 3> get_im() const;
 	inline T re() const;
 
 	inline arr<T, 4>& operator()() { return *this; };
@@ -60,9 +60,9 @@ inline void quat<T>::set_im(const arr<T, 3>& im)
 }
 
 template<typename T>
-inline vect<T, 3> quat<T>::get_im() const
+inline vect_base<T, 3> quat<T>::get_im() const
 {
-	vect<T, 3> res;
+	vect_base<T, 3> res;
 	const quat<T>& v = *this;
 	res.set(0, v.get(1));
 	res.set(1, v.get(2));
@@ -109,8 +109,8 @@ template<typename T>
 inline quat<T>  quat<T>::operator * (const quat<T>& rhs) const
 {
 	quat<T> res;
-	vect<T, 3> lv = get_im();
-	vect<T, 3> rv = rhs.get_im();
+	vect_base<T, 3> lv = get_im();
+	vect_base<T, 3> rv = rhs.get_im();
 	T lr = re();
 	T rr = rhs.re();
 

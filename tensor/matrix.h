@@ -38,6 +38,7 @@ class matrix_base : private std::array<std::array<T, N>, N>
 	//void create_shared_ptr();// { itself_shared_ptr = std::shared_ptr<const matrix_base<T, N>>(this); };
 public:
 	matrix_base(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
+	matrix_base(const matrix_base<T,N>& m);
 	//~matrix_base();
 
 	//void create_basis(std::shared_ptr<const matrix_base<T, N>>& srd_ptr) const;// { return std::shared_ptr<const matrix_base<T, N>>(this); };
@@ -73,6 +74,12 @@ public:
 };
 
 
+template<typename T, std::size_t N>
+matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m)
+{
+	(*this) = m;
+	//static_cast<a<T, N>&>(vect_base<T, N>::operator=(a));
+}
 //template<typename T, std::size_t N>
 //void matrix_base <T, N>::create_shared_ptr() { 
 //	itself_shared_ptr = std::shared_ptr<const matrix_base<T, N>>(this); 

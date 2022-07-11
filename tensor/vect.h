@@ -10,33 +10,35 @@ class vect_base : public arr<T, N>
 public:
 	explicit vect_base() { };
 	vect_base(T val ) : arr<T, N>(val) { };
-
+	virtual ~vect_base() {};
 	inline arr<T, N>& operator()() { return *this; };
 	operator arr<T, N>() const { return *this; };
 	inline virtual vect_base& operator = (const arr<T, N>& a);
-	//inline virtual vect_base  operator + (const vect_base<T, N>& v);
-	inline static vect_base vector_product(const vect_base& lhs, const vect_base& rhs);
-	inline vect_base vector_product(const vect_base& rhs) const;
+	inline static  vect_base vector_product(const vect_base& lhs, const vect_base& rhs);
+	inline virtual vect_base vector_product(const vect_base& rhs) const;
 };
 
 
 template<typename T, size_t N>
 class vect : public vect_base<T, N>
 {
+	bool  basis_owner;
 	const matrix_base<T, N>* basis = nullptr;
-	void create_basis(const matrix_base<T, N>* m = nullptr);
+	void  create_basis(const matrix_base<T, N>* m = nullptr);
 	vect_base<T, N> move_to_basis(const vect<T, N>& v) const; // move v[i] to this->basis
 public:
-	//virtual ~vect_base() {  }
-	//explicit vect() { create_basis(nullptr); };
-	vect(const vect<T, N>& v);// { (*this) = v; create_basis(v.basis); };
-	vect(const matrix_base<T, N>* m = nullptr) { create_basis(m); };
+	virtual ~vect();
+	vect(const vect<T, N>& v);
+	vect(const matrix_base<T, N>* m = nullptr);// { basis_owner = false; };// { basis_owner = create_basis(m); };
 	vect(const vect_base<T, N>& v, const matrix_base<T, N>* m = nullptr);
 	vect(const arr      <T, N>& a, const matrix_base<T, N>* m = nullptr);
-	vect(T val, const matrix_base<T, N>* m = nullptr) : vect_base<T, N>(val) { create_basis(m); };
+	vect(T val, const matrix_base<T, N>* m = nullptr);// { basis_owner = false; };// { basis_owner = create_basis(m); };
 
-	virtual vect& operator = (const vect<T, N>& v);
-	virtual vect  operator + (const vect<T, N>& v);
+	 vect& operator = (const vect<T, N>& v) ;
+	 vect  operator + (const vect<T, N>& v) const;
+	 vect  operator - (const vect<T, N>& v) const;
+	 T     operator * (const vect<T, N>& v) const;
+	 vect  vector_product(const vect& rhs) const;
 };
 
 template<typename T, size_t N>
@@ -44,17 +46,31 @@ inline vect_base<T, N>& vect_base<T, N>::operator = (const arr<T, N>& a) {
 	return static_cast<vect_base<T, N>&>(arr<T, N>::operator=(a));
 }
 
+template<typename T, size_t N>
+vect<T, N>::~vect() {
+	if (basis_owner) delete basis;
+};
+
+template<typename T, size_t N>
+vect<T, N>::vect(const matrix_base<T, N>* m) {
+	create_basis(m);
+};
+
+template<typename T, size_t N>
+vect<T, N>::vect(T val, const matrix_base<T, N>* m) : vect_base<T, N>(val) {
+	create_basis(m);
+};
 
 template<typename T, size_t N>
 vect<T, N>::vect(const vect<T, N>& v) { 
 	static_cast<vect_base<T, N>&>(vect_base<T, N>::operator=(v));// (*this) = v;
-	create_basis(v.basis); 
+	create_basis(v.basis);
 };
 template<typename T, size_t N>
 vect<T, N>::vect(const vect_base<T, N>& v, const matrix_base<T, N>* m) 
 { 
 	static_cast<vect_base<T, N>&>(vect_base<T, N>::operator=(v)); //static_cast<vect_base<T, N>> (*this) = v;
-	create_basis(m); 
+	create_basis(m);
 };
 
 template<typename T, size_t N>
@@ -85,17 +101,20 @@ vect<T, N>& vect<T, N>::operator = (const vect<T, N>& v) {
 	return static_cast<vect<T, N>&>(vect_base<T, N>::operator=(move_to_basis(v)));
 }
 
-//template<typename T, size_t N>
-//vect_base<T, N> vect_base<T, N>::operator + (const vect_base<T, N>& v) {
-//	//vect_base<T, N> res = static_cast<vect_base<T, N>>(*this) + static_cast<vect_base<T, N>>(move_to_basis(v));
-//	return static_cast<vect_base<T, N>>(vect_base<T, N>::operator+(v));// static_cast<vect_base<T, N>>(*this) + v;
-//}
 
 template<typename T, size_t N>
-vect<T, N> vect<T, N>::operator + (const vect<T, N>& v) {
-	arr<T, N> res = static_cast<arr<T, N>>(*this) + (move_to_basis(v));
-	vect<T, N> result(res, this->basis);
-	return result;
+vect<T, N> vect<T, N>::operator + (const vect<T, N>& v) const {
+	return vect<T, N>(static_cast<arr<T, N>>(*this) + (move_to_basis(v)), this->basis);
+}
+
+template<typename T, size_t N>
+vect<T, N> vect<T, N>::operator - (const vect<T, N>& v) const {
+	return vect<T, N>(static_cast<arr<T, N>>(*this) - (move_to_basis(v)), this->basis);
+}
+
+template<typename T, size_t N>
+T vect<T, N>::operator * (const vect<T, N>& v) const {
+	return static_cast<arr<T, N>>(*this) * (move_to_basis(v));
 }
 
 template<typename T, size_t N>
@@ -103,13 +122,25 @@ void vect<T, N >::create_basis(const matrix_base<T, N>* m){
 	if (basis == nullptr)
 	{
 		if (m == nullptr)
+		{
 			basis = new matrix_base<T, N>(MATRIXINITTYPE::INDENT);
+			basis_owner = true;
+		}
 		else
 			basis = m;
 	}
+	basis_owner = false;
+}
 
+
+template<typename T, size_t N>
+vect<T, N> vect<T, N >::vector_product(const vect& rhs) const
+{
+	vect_base<T, N > comp = vect_base<T, N >::vector_product(move_to_basis(rhs));
+	return vect<T, N>(comp, basis);
 }
 template<typename T, size_t N>
+
 inline  vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N>& lhs, const vect_base<T, N >& rhs) {
 	if (N == 3)
 	{

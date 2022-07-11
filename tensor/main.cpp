@@ -3,15 +3,16 @@
 #include "vect.h"
 #include "quat.h"
 #include "matrix.h"
+const size_t N = 3;
 int main()
 {
 	{
-		matrix_base<double, 3> m0(MATRIXINITTYPE::ZERO);
+		matrix_base<double, N> m0(MATRIXINITTYPE::ZERO);
 	}
 	{
-		matrix_base<double, 3> m0(MATRIXINITTYPE::ZERO);
-		matrix_base<double, 3> m1(MATRIXINITTYPE::INDENT);
-		matrix_base<double, 3> m2 = m1;
+		matrix_base<double, N> m0(MATRIXINITTYPE::ZERO);
+		matrix_base<double, N> m1(MATRIXINITTYPE::INDENT);
+		matrix_base<double, N> m2 = m1;
 		transpose(m1);
 		m1.transpose();
 		std::cout << m1;
@@ -19,11 +20,11 @@ int main()
 		m2 += m1;
 		m2 -= m1;
 		m1 *= 3.0;
-		matrix_base<double, 3> m3 = m2 - m1 * 3;
-		std::array<std::array<double, 3>, 3> res = m3();
+		matrix_base<double, N> m3 = m2 - m1 * 3;
+		std::array<std::array<double, N>, N> res = m3();
 		m0 = res;
 		m3 = m2 * m2;
-		matrix_base<double, 3> m4(MATRIXINITTYPE::INDENT);
+		matrix_base<double, N> m4(MATRIXINITTYPE::INDENT);
 		m4 = m3.transform(TRANSPOSE::FALSE, m2, TRANSPOSE::TRUE);
 	}
 	vect<double, 3> v1 = -1;
@@ -34,7 +35,7 @@ int main()
 	v1 + v2;
 	vect<double, 3> v5(v1 + v2*0.5);
 	v3 = v1;
-	v1.vector_product(v2);
+	v3 = v1.vector_product(v2);
 	quat<double> q0;
 	quat<double> q1(0.1, v1);
 	quat<double> q2(-0.3, v2);
