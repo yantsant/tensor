@@ -1,5 +1,6 @@
 #pragma once
 #include "array.h"
+#include "vect.h"
 
 template<typename T>
 class quat : public arr<T, 4>

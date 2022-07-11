@@ -5,30 +5,34 @@
 #include "matrix.h"
 int main()
 {
-
-	matrix<double, 3> m0 (MATRIXINITTYPE::ZERO);
-	matrix<double, 3> m1 (MATRIXINITTYPE::INDENT);
-	matrix<double, 3> m2 = m1;
-	transpose(m1);
-	m1.transpose();
-	std::cout << m1;
-	m2 = 1.0;
-	m2 += m1;
-	m2 -= m1;
-	m1 *= 3.0;
-	matrix<double, 3> m3 = m2 - m1*3;
-	std::array<std::array<double, 3>, 3> res = m3();
-	m0 = res;
-	m3 = m2 * m2;
-	matrix<double, 3> m4(MATRIXINITTYPE::INDENT);
-	m4 = m3.transform(TRANSPOSE::FALSE, m2, TRANSPOSE::TRUE);
+	{
+		matrix_base<double, 3> m0(MATRIXINITTYPE::ZERO);
+	}
+	{
+		matrix_base<double, 3> m0(MATRIXINITTYPE::ZERO);
+		matrix_base<double, 3> m1(MATRIXINITTYPE::INDENT);
+		matrix_base<double, 3> m2 = m1;
+		transpose(m1);
+		m1.transpose();
+		std::cout << m1;
+		m2 = 1.0;
+		m2 += m1;
+		m2 -= m1;
+		m1 *= 3.0;
+		matrix_base<double, 3> m3 = m2 - m1 * 3;
+		std::array<std::array<double, 3>, 3> res = m3();
+		m0 = res;
+		m3 = m2 * m2;
+		matrix_base<double, 3> m4(MATRIXINITTYPE::INDENT);
+		m4 = m3.transform(TRANSPOSE::FALSE, m2, TRANSPOSE::TRUE);
+	}
 	vect<double, 3> v1 = -1;
 	vect<double, 3> v2 = 2;
 	vect<double, 3> v3;
 	v1 *= 1.4;
 	std::cout << v1;
-	//v3 = v1 + v2;
-	v3 = v1 + v2*0.5;
+	v1 + v2;
+	vect<double, 3> v5(v1 + v2*0.5);
 	v3 = v1;
 	v1.vector_product(v2);
 	quat<double> q0;

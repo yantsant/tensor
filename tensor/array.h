@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include "matrix.h"
 
 template<typename T, size_t N>
 class arr : private std::array<T, N>
@@ -26,6 +27,7 @@ public:
 	}
 
 	virtual inline T    operator * (const arr& v) const;
+	virtual inline arr  operator * (const matrix_base<T,N>& m) const;
 	virtual inline T    norm() const;
 
 	inline std::array<T, N>& operator()() { return *this; };
@@ -177,6 +179,18 @@ inline T arr<T, N >::operator* (const arr<T, N >& v) const {
 	T res = (T)0;
 	for (size_t row = 0; row < N; row++)
 		res += (*this)[row] * v[row];
+
+	return res;
+}
+
+
+template<typename T, size_t N>
+inline arr<T, N > arr<T, N >::operator* (const matrix_base<T, N >& m) const {
+	arr <T, N> res = (T)0;
+	std::array<std::array<T, N>, N> matr = m();
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			res[row] += (*this)[col] * matr[col][row];
 
 	return res;
 }

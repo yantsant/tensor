@@ -7,7 +7,7 @@
 //using shrptr = std::shared_ptr<const matrix<T, DIM>>;
 
 template<typename T>
-class Tensor : public matrix<T, DIM>
+class Tensor : public matrix_base<T, DIM>
 {
 	std::shared_ptr<const Tensor<T>> basis;
 public:
@@ -24,7 +24,7 @@ public:
 
 	std::shared_ptr<const Tensor<T>> get_basis() const { return basis; };
 
-	matrix<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
+	matrix_base<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
 	void move_to_basis( const Tensor<T>& target_basis);
 
 	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : matrix<T, DIM>(IT)
@@ -90,9 +90,9 @@ Tensor<T>  Tensor<T>::operator *=(const Tensor<T>& t)
 
 /* return components of this in target basis*/
 template<typename T>
-matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
+matrix_base<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
 {
-	matrix<T, DIM> comp_at_terget_basis = (T)0;
+	matrix_base<T, DIM> comp_at_terget_basis = (T)0;
 
 	const auto target_basis = target.get_basis();
 	if (basis == target_basis)
@@ -101,10 +101,10 @@ matrix<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
 	{
 		if (target_basis == nullptr)
 		{
-			const matrix<T, DIM> &op = basis.get()->ref();
+			const matrix_base<T, DIM> &op = basis.get()->ref();
 			//const matrix<T, DIM> &opm = opt->ref();
-			matrix<T, DIM> x;
-			matrix<T, DIM>::right_transform(op, x);
+			matrix_base<T, DIM> x;
+			matrix_base<T, DIM>::right_transform(op, x);
 		}
 		else
 		{
