@@ -3,7 +3,6 @@
 #include <random>
 #include <iostream>
 //#include "vect.h"
-const char DIM = 3;
 enum class MATRIXINITTYPE
 {
 	ZERO,
@@ -26,6 +25,8 @@ enum class TRANSPOSE
 //	return unidistr<T>(random_engine); 
 //};
 
+const size_t DIM = 3;
+
 template<typename T, std::size_t N> class matrix_base;  // pre-declare the template class itself
 template<typename T, std::size_t N> void _transpose(matrix_base<T, N>& m);
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix_base<T,N>& m);
@@ -34,6 +35,8 @@ template<typename T, std::size_t N>
 class matrix_base : private std::array<std::array<T, N>, N>
 {
 	void set_zero();
+	T precision;// = (T)1 / (T)1000000;
+	void set_precision();
 	//std::shared_ptr<const matrix_base<T, N>> itself_shared_ptr;
 	//void create_shared_ptr();// { itself_shared_ptr = std::shared_ptr<const matrix_base<T, N>>(this); };
 public:
@@ -46,6 +49,7 @@ public:
 	inline std::array<std::array<T, N>, N> operator()() const { 
 		return static_cast<std::array<std::array<T, N>, N>>(*this); };
 
+	bool        check_ort() const;
 	matrix_base transpose() const;
 	matrix_base scal     (TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
 	matrix_base transform(TRANSPOSE left, const matrix_base& op , TRANSPOSE right) const;
@@ -73,41 +77,37 @@ public:
 	};
 };
 
-
+template<typename T, std::size_t N>
+void matrix_base<T, N>::set_precision()
+{
+	std::string type(typeid(T).name());
+	if (type.find("double") != std::string::npos)
+		precision = (T)1 / (T)1e10;
+	else if (type.find("float") != std::string::npos)
+		precision = (T)1 / (T)1000000;
+	else
+		precision = (T)1 / (T)100000;
+}
 template<typename T, std::size_t N>
 matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m)
 {
 	(*this) = m;
-	//static_cast<a<T, N>&>(vect_base<T, N>::operator=(a));
+	set_precision();
 }
-//template<typename T, std::size_t N>
-//void matrix_base <T, N>::create_shared_ptr() { 
-//	itself_shared_ptr = std::shared_ptr<const matrix_base<T, N>>(this); 
-//};
-//
-//template<typename T, std::size_t N>
-//void  matrix_base <T, N>::create_basis(std::shared_ptr<const matrix_base<T, N>> &shrd_ptr) const {
-//	shrd_ptr = itself_shared_ptr;
-//};
 
-//template<typename T, std::size_t N>
-//matrix_base<T, N>::~matrix_base()
-//{
-//	//itself_shared_ptr.reset();
-//	return; 
-//	try
-//	{
-//		if (itself_shared_ptr.use_count() == 1)
-//			itself_shared_ptr.reset();
-//		else
-//			throw std::underflow_error("destroying basis when other objects own them");
-//	}
-//	catch (const std::runtime_error& err)
-//	{
-//		fputs(err.what(), stderr);
-//		exit( 1);
-//	}
-//}
+
+template<typename T, size_t N>
+bool matrix_base<T, N >::check_ort() const {
+	matrix_base<T, N> m = *this * this->transpose() - matrix_base<T, N>(MATRIXINITTYPE::INDENT);
+	T diag = 0;
+	T nondiag = 0;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			(row == col) ? diag += (*this)[row][col] : nondiag += (*this)[row][col];
+	if (abs(diag - (T)N) / (T)N + abs(nondiag) <= precision)
+			return true;
+	return false;
+}
 
 template<typename T, std::size_t N>
 std::ostream& operator<<(std::ostream& out, const matrix_base<T, N>& a) {
@@ -202,7 +202,7 @@ matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT)
 		break;
 	}
 
-	//create_shared_ptr();
+	set_precision();
 }
 
 template<typename T, std::size_t N>

@@ -3,37 +3,46 @@
 #include "vect.h"
 #include "quat.h"
 #include "matrix.h"
-const size_t N = 3;
+
+//template<typename T, size_t N>
+//const matrix_base<T, N> GLOBAL_DEFAULT_BASIS(MATRIXINITTYPE::INDENT);
+
 int main()
 {
 	{
-		matrix_base<double, N> m0(MATRIXINITTYPE::ZERO);
+		matrix_base<double, DIM> m0(MATRIXINITTYPE::ZERO);
 	}
+	for (size_t row = 0; row < 1000000; row++)
 	{
-		matrix_base<double, N> m0(MATRIXINITTYPE::ZERO);
-		matrix_base<double, N> m1(MATRIXINITTYPE::INDENT);
-		matrix_base<double, N> m2 = m1;
-		transpose(m1);
-		m1.transpose();
-		std::cout << m1;
-		m2 = 1.0;
-		m2 += m1;
-		m2 -= m1;
-		m1 *= 3.0;
-		matrix_base<double, N> m3 = m2 - m1 * 3;
-		std::array<std::array<double, N>, N> res = m3();
-		m0 = res;
-		m3 = m2 * m2;
-		matrix_base<double, N> m4(MATRIXINITTYPE::INDENT);
-		m4 = m3.transform(TRANSPOSE::FALSE, m2, TRANSPOSE::TRUE);
+		matrix_base<double, DIM>* m0 = new matrix_base<double, DIM>(MATRIXINITTYPE::ZERO);
+		matrix_base<double, DIM>* m1 = new matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
+		matrix_base<double, DIM>* m2 = new matrix_base<double, DIM> (*m1);
+		transpose(*m1);
+		m1->transpose();
+		//std::cout << *m1;
+		*m2 = 1.0;
+		*m2 += *m1;
+		*m2 -= *m1;
+		*m1 *= 3.0;
+		matrix_base<double, DIM>* m3  = new matrix_base<double, DIM>((*m2) - (*m1) * 3);
+		*m3 = *m2 * *m2;
+		matrix_base<double, DIM> m4(MATRIXINITTYPE::INDENT);
+		m4 = m3->transform(TRANSPOSE::FALSE, *m2, TRANSPOSE::TRUE);
+		delete m0;
+		delete m1;
+		delete m2;
+		delete m3;
 	}
-	vect<double, 3> v1 = -1;
-	vect<double, 3> v2 = 2;
-	vect<double, 3> v3;
+	vect<double, 3> v1(-1.0, GLOBAL_DEFAULT_BASIS<double, 3>);
+	vect<double, 3> v2( 2, GLOBAL_DEFAULT_BASIS<double, 3>);
+	vect<double, 3> v3(GLOBAL_DEFAULT_BASIS<double, 3>);
 	v1 *= 1.4;
+	v1 * 0.5;
 	std::cout << v1;
-	v1 + v2;
-	vect<double, 3> v5(v1 + v2*0.5);
+	v3 = (v1 - v2*0.5) * 0.3;
+	vect<double, 3> v5 ( v1 + v2);
+	v5.normalize();
+	//v5 = v1 + v2 * 0.5;
 	v3 = v1;
 	v3 = v1.vector_product(v2);
 	quat<double> q0;
