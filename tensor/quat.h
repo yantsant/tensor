@@ -48,16 +48,14 @@ quat<T>::quat(const vect_base<T, 4>& v) {
 };
 
 template<typename T>
-inline void quat<T>::set_im(const vect_base<T, 3>& im)
-{
+inline void quat<T>::set_im(const vect_base<T, 3>& im){
 	this->set(1, im.get(0));
 	this->set(2, im.get(1));
 	this->set(3, im.get(2));
 }
 
 template<typename T>
-inline vect_base<T, 3> quat<T>::get_im() const
-{
+inline vect_base<T, 3> quat<T>::get_im() const{
 	vect_base<T, 3> res;
 	const quat<T>& v = *this;
 	res.set(0, v.get(1));
@@ -67,43 +65,35 @@ inline vect_base<T, 3> quat<T>::get_im() const
 }
 
 template<typename T>
-inline T quat<T>::re() const
-{
+inline T quat<T>::re() const{
 	return this->get(0);
 }
 
 
 template<typename T>
-inline quat<T>& quat<T>::operator = (const vect_base<T, 4>& v)
-{
+inline quat<T>& quat<T>::operator = (const vect_base<T, 4>& v){
 	return static_cast<quat<T>&>(vect_base<T, 4>::operator=(v));
 }
 
 template<typename T>
-inline quat<T> quat<T>::operator * () const
-{
+inline quat<T> quat<T>::operator * () const{
 	quat<T> res(*this);
 	res.set_im(-this->get_im());
 	return res;
 }
 
 template<typename T>
-inline quat<T> quat<T>::operator ! () const
-{
+inline quat<T> quat<T>::operator ! () const{
 	quat<T> res(*(*this));
 	T norm2 = static_cast<vect_base<T,4>>(res) * static_cast<vect_base<T, 4>>(res);
 	return res / norm2;
 }
 
-template<typename T>
-inline quat<T> quat<T>::operator * (const T& mult) const
-{
+template<typename T>inline quat<T> quat<T>::operator * (const T& mult) const{
 	return static_cast<quat<T>>(vect_base<T, 4>::operator*(mult));
 }
 
-template<typename T>
-inline quat<T>  quat<T>::operator * (const quat<T>& rhs) const
-{
+template<typename T>inline quat<T>  quat<T>::operator * (const quat<T>& rhs) const{
 	quat<T> res;
 	vect_base<T, 3> lv = get_im();
 	vect_base<T, 3> rv = rhs.get_im();

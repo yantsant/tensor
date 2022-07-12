@@ -1,117 +1,82 @@
 #pragma once
 #include "matrix.h"
 #include "quat.h"
+#include "vect.h"
 
-
-//template <typename T>
-//using shrptr = std::shared_ptr<const matrix<T, DIM>>;
-
-template<typename T>
-class Tensor : public matrix_base<T, DIM>
+template<typename T, size_t N>
+class Tensor : private basis_handler<T, N>, public matrix_base<T, N>
 {
-	std::shared_ptr<const Tensor<T>> basis;
 public:
-	~Tensor() { basis.reset(); }
+	~Tensor() { };
 
 	virtual Tensor& operator = (const Tensor& t);
+	virtual Tensor& operator = (const T& value);
 	virtual Tensor  operator + (const Tensor& t) const;
 	virtual Tensor  operator - (const Tensor& t) const;
 	virtual Tensor  operator * (const Tensor& t) const;
 	virtual Tensor& operator +=(const Tensor& t);
 	virtual Tensor& operator -=(const Tensor& t);
-	virtual Tensor  operator *=(const Tensor& t);
-	//virtual bool  operator ==(const Tensor& t) const;
+	virtual Tensor& operator *=(const Tensor& t);
 
-	std::shared_ptr<const Tensor<T>> get_basis() const { return basis; };
+	matrix_base<T, N> comp_at_basis( const matrix_base<T, N>& target_basis) const;
 
-	matrix_base<T, DIM> calc_comp_at_basis( const Tensor<T>& target_basis) const;
-	void move_to_basis( const Tensor<T>& target_basis);
-
-	Tensor(const Tensor<T>& _basis, MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO) : matrix<T, DIM>(IT)
-	{
-		basis = _basis.get_basis();
-		const Tensor<double>* bs = basis.get();
-	}
-
-	Tensor(MATRIXINITTYPE IT = MATRIXINITTYPE::INDENT) : matrix<T, DIM>(IT)
-	{
-		basis = nullptr;
-	}
-
+	Tensor(MATRIXINITTYPE IT,             const matrix_base<T, N>& basis) : matrix_base<T, N>(IT  ), basis_handler<T, N>(basis) {};
+	Tensor(const matrix_base<T, N>& comp, const matrix_base<T, N>& basis) : matrix_base<T, N>(comp), basis_handler<T, N>(basis) {};
 };
 
 
-template<typename T>
-Tensor<T>& Tensor<T>::operator = (const Tensor<T>& t)
-{
-	matrix<T, DIM>::copy(t);
-	basis = t.basis;
-	return *this;
+template<typename T, size_t N>
+Tensor<T, N>& Tensor<T, N>::operator = (const T& value) {
+	return static_cast<Tensor<T, N>&>(matrix_base<T, N>::operator=(value));
 };
 
+template<typename T, size_t N>
+Tensor<T, N>& Tensor<T, N>::operator = (const Tensor<T, N>& t)  {
+	return static_cast<Tensor<T, N>&>(matrix_base<T, N>::operator=(t.comp_at_basis(this->basis())));
+};
 
-template<typename T>
-Tensor<T>  Tensor<T>::operator + (const Tensor<T>& t) const
-{
-	t.calc_comp_at_basis(*this);
-	Tensor<T> res;
-	return res;
+template<typename T, size_t N>
+Tensor<T, N>  Tensor<T, N>::operator + (const Tensor<T, N>& t) const {
+	return Tensor<T, N>(matrix_base<T, N>::operator+(t.comp_at_basis(this->basis())), this->basis());
 }
-template<typename T>					
-Tensor<T>  Tensor<T>::operator - (const Tensor<T>& t) const 
-{
-	Tensor<T> res;
-	return res;
+template<typename T, size_t N>
+Tensor<T, N>  Tensor<T, N>::operator - (const Tensor<T, N>& t) const {
+	return Tensor<T, N>(matrix_base<T, N>::operator-(t.comp_at_basis(this->basis())), this->basis());
+}
 
+template<typename T, size_t N>
+Tensor<T, N>  Tensor<T, N>::operator * (const Tensor<T, N>& t) const  {
+	return Tensor<T, N>(matrix_base<T, N>::operator*(t.comp_at_basis(this->basis())), this->basis());
 }
-template<typename T>					
-Tensor<T>  Tensor<T>::operator * (const Tensor<T>& t) const
-{
 
-	Tensor<T> res;
-	return res;
-}
-template<typename T>					
-Tensor<T>& Tensor<T>::operator +=(const Tensor<T>& t)
-{
+template<typename T, size_t N>
+Tensor<T, N>& Tensor<T, N>::operator +=(const Tensor<T, N>& t)  {
+	matrix_base<T, N>::operator+=(t.comp_at_basis(this->basis()));
 	return *this;
 }
-template<typename T>					
-Tensor<T>& Tensor<T>::operator -=(const Tensor<T>& t)
-{
+template<typename T, size_t N>
+Tensor<T, N>& Tensor<T, N>::operator -=(const Tensor<T, N>& t)  {
+	matrix_base<T, N>::operator-=(t.comp_at_basis(this->basis()));
 	return *this;
 }
-template<typename T>					
-Tensor<T>  Tensor<T>::operator *=(const Tensor<T>& t)
-{
-	Tensor<T> res;
-	return res;
+template<typename T, size_t N>
+Tensor<T, N>& Tensor<T, N>::operator *=(const Tensor<T, N>& t){
+	matrix_base<T, N>::operator*=(t.comp_at_basis(this->basis()));
+	return *this;
 }
 
-/* return components of this in target basis*/
-template<typename T>
-matrix_base<T, DIM> Tensor<T>::calc_comp_at_basis( const Tensor<T>& target) const
+/* return components of this in target basis m*/
+template<typename T, size_t N>
+matrix_base<T, N> Tensor<T, N>::comp_at_basis( const matrix_base<T, N>& m) const
 {
-	matrix_base<T, DIM> comp_at_terget_basis = (T)0;
-
-	const auto target_basis = target.get_basis();
-	if (basis == target_basis)
-		comp_at_terget_basis = *this;
-	else
-	{
-		if (target_basis == nullptr)
-		{
-			const matrix_base<T, DIM> &op = basis.get()->ref();
-			//const matrix<T, DIM> &opm = opt->ref();
-			matrix_base<T, DIM> x;
-			matrix_base<T, DIM>::right_transform(op, x);
-		}
-		else
-		{
-
-		}
-		//comp_at_terget_basis = *this * 
+	matrix_base<T, N> res;
+	if (this->same_basis(m)) {
+		res = *this;
 	}
-
-	return comp_at_terget_basis;
+	else {
+		const matrix_base<T, N>& op   = this->basis() * m.transpose();
+		const matrix_base<T, N>& comp = static_cast<const matrix_base<T, N>&> (*this);
+		res = this->transform(TRANSPOSE::TRUE, op, TRANSPOSE::FALSE); // op^t * (*this) * op
+	}
+	return res;
 }

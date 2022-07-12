@@ -3,15 +3,23 @@
 #include "vect.h"
 #include "quat.h"
 #include "matrix.h"
+#include "tensor.h"
 
 //template<typename T, size_t N>
 //const matrix_base<T, N> GLOBAL_DEFAULT_BASIS(MATRIXINITTYPE::INDENT);
 
 int main()
 {
-	{
-		matrix_base<double, DIM> m0(MATRIXINITTYPE::ZERO);
-	}
+	
+	matrix_base<double, DIM>* m0 = new matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
+	Tensor<double, DIM> t0(MATRIXINITTYPE::INDENT, *m0);
+	Tensor<double, DIM> t1(MATRIXINITTYPE::INDENT, *m0);
+	Tensor<double, DIM> t2(MATRIXINITTYPE::ZERO  , *m0);
+	t0 = 2.0;
+	t1 = 3.0;
+	t2 += t1;
+	t2 += t0;
+	
 	//for (size_t row = 0; row < 1000000; row++)
 	{
 		matrix_base<double, DIM>* m0 = new matrix_base<double, DIM>(MATRIXINITTYPE::ZERO);
@@ -20,6 +28,7 @@ int main()
 		transpose(*m1);
 		m1->transpose();
 		//std::cout << *m1;
+		*m2 = *m0;
 		*m2 = 1.0;
 		*m2 += *m1;
 		*m2 -= *m1;
@@ -38,7 +47,7 @@ int main()
 	vect<double, 3> v3(GLOBAL_DEFAULT_BASIS<double, 3>);
 	v1 *= 1.4;
 	v1 * 0.5;
-	v1 -= v2;
+	v1 = -v2;
 	std::cout << v1;
 	auto x = v1* v2;
 	v3 = (v1 - v2*0.5) * 0.3;

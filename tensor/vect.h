@@ -39,6 +39,7 @@ public:
 	vect(const vect<T, N>& v      , const matrix_base<T, N>& m);
 	vect(const std::array<T, N>& a, const matrix_base<T, N>& m);
 
+	inline vect  operator - ();
 	inline vect& operator = (const vect<T, N>& v);
 	inline vect& operator +=(const vect<T, N>& v);
 	inline vect& operator -=(const vect<T, N>& v);
@@ -74,6 +75,11 @@ vect_base<T, N> vect<T, N>::comp_at_basis(const matrix_base<T, N>& m) const{
 		res = (comp * Rl) * Rr; // (*this) * this->basis() * m.transpose();
 	}
 	return res;
+}
+
+template<typename T, size_t N>
+vect<T, N> vect<T, N>::operator - () {
+	return  vect<T, N>(vect_base<T, N>::operator-(), this->basis());
 }
 
 template<typename T, size_t N>

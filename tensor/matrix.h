@@ -27,8 +27,7 @@ enum class TRANSPOSE
 
 const size_t DIM = 3;
 
-template<typename T, std::size_t N> class matrix_base;  // pre-declare the template class itself
-template<typename T, std::size_t N> void _transpose(matrix_base<T, N>& m);
+template<typename T, std::size_t N> class matrix_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix_base<T,N>& m);
 
 template<typename T, std::size_t N>
@@ -37,17 +36,10 @@ class matrix_base : private std::array<std::array<T, N>, N>
 	void set_zero();
 	T precision;// = (T)1 / (T)1000000;
 	void set_precision();
-	//std::shared_ptr<const matrix_base<T, N>> itself_shared_ptr;
-	//void create_shared_ptr();// { itself_shared_ptr = std::shared_ptr<const matrix_base<T, N>>(this); };
 public:
 	matrix_base(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
 	matrix_base(const matrix_base<T,N>& m);
-	//~matrix_base();
-
-	//void create_basis(std::shared_ptr<const matrix_base<T, N>>& srd_ptr) const;// { return std::shared_ptr<const matrix_base<T, N>>(this); };
-
-	inline std::array<std::array<T, N>, N> operator()() const { 
-		return static_cast<std::array<std::array<T, N>, N>>(*this); };
+	inline std::array<std::array<T, N>, N> operator()() const { return static_cast<std::array<std::array<T, N>, N>>(*this); };
 
 	bool        check_ort() const;
 	matrix_base transpose() const;
@@ -55,13 +47,9 @@ public:
 	matrix_base transform(TRANSPOSE left, const matrix_base& op , TRANSPOSE right) const;
 
 	matrix_base& operator = (const T& vl);
-	matrix_base& operator = (const std::array<std::array<T, N>, N>& m);
-	//matrix_base& operator = (const matrix_base& m);
-
 	virtual matrix_base  operator + (const matrix_base& m) const;
 	virtual matrix_base  operator - (const matrix_base& m) const;
 	virtual matrix_base  operator * (const matrix_base& m) const;
-	//virtual matrix_base  operator * (const vect_base& m) const;
 	virtual matrix_base  operator * (const T& val) const;
 	virtual matrix_base& operator +=(const matrix_base& m);
 	virtual matrix_base& operator -=(const matrix_base& m);
@@ -89,12 +77,10 @@ void matrix_base<T, N>::set_precision()
 		precision = (T)1 / (T)100000;
 }
 template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m)
-{
+matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m) {
 	(*this) = m;
 	set_precision();
 }
-
 
 template<typename T, size_t N>
 bool matrix_base<T, N >::check_ort() const {
@@ -122,8 +108,7 @@ std::ostream& operator<<(std::ostream& out, const matrix_base<T, N>& a) {
 };
 
 template<typename T, std::size_t N>
-void matrix_base<T, N>::set_zero()
-{
+void matrix_base<T, N>::set_zero() {
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
 			(*this)[row][col] = (T)0;
@@ -131,8 +116,7 @@ void matrix_base<T, N>::set_zero()
 
 
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::transpose() const
-{
+matrix_base<T, N> matrix_base<T, N>::transpose() const {
 	matrix_base<T, N> res(*this);
 	//transpose(res);
 	for (size_t row = 0; row < N; row++)
@@ -145,8 +129,7 @@ matrix_base<T, N> matrix_base<T, N>::transpose() const
 
 // this^?l . rhs^?r
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const
-{
+matrix_base<T, N> matrix_base<T, N>::scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const {
 	if (left == right)
 	{
 		if (left == TRANSPOSE::FALSE)
@@ -165,8 +148,7 @@ matrix_base<T, N> matrix_base<T, N>::scal(TRANSPOSE left, const matrix_base& rhs
 
 //  op^?l . this . op^?r
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const
-{
+matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const {
 	matrix_base<T, N> opt = op.transpose();
 	if (left == right)
 	{
@@ -185,8 +167,7 @@ matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT)
-{
+matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) {
 	switch (IT)
 	{
 	case MATRIXINITTYPE::ZERO  :
@@ -206,8 +187,7 @@ matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT)
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl)
-{
+matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl) {
 	T value = (T)vl;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
@@ -215,23 +195,8 @@ matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl)
 	return (*this);
 };
 
-
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator = (const std::array<std::array<T, N>, N>& m) {
-	(*static_cast<std::array<std::array<T, N>, N>*>(this)) = m;
-	return *this;
-};
-
-//template<typename T, std::size_t N>
-//matrix_base<T, N>& matrix_base<T, N>::operator = (const matrix_base<T, N>& m) {
-//	(*static_cast<std::array<std::array<T, N>, N>*>(this)) = m;
-//	itself_shared_ptr = m.itself_shared_ptr;
-//	return *this;
-//};
-
-template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) const
-{
+matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) const {
 	matrix_base<T, N> nhs;
 
 	if (N < 1) return nhs;
@@ -243,8 +208,7 @@ matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) c
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::operator - (const matrix_base<T, N>& rhs) const
-{
+matrix_base<T, N> matrix_base<T, N>::operator - (const matrix_base<T, N>& rhs) const {
 	matrix_base<T, N> nhs;
 
 	if (N < 1) return nhs;
@@ -257,8 +221,7 @@ matrix_base<T, N> matrix_base<T, N>::operator - (const matrix_base<T, N>& rhs) c
 
 
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator += (const matrix_base<T, N>& rhs)
-{
+matrix_base<T, N>& matrix_base<T, N>::operator += (const matrix_base<T, N>& rhs) {
 	if (N < 1) return *this;
 
 	for (size_t row = 0; row < N; row++)
@@ -269,8 +232,7 @@ matrix_base<T, N>& matrix_base<T, N>::operator += (const matrix_base<T, N>& rhs)
 
 
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator -= (const matrix_base<T, N>& rhs)
-{
+matrix_base<T, N>& matrix_base<T, N>::operator -= (const matrix_base<T, N>& rhs) {
 	if (N < 1) return *this;
 
 	for (size_t row = 0; row < N; row++)
@@ -280,8 +242,7 @@ matrix_base<T, N>& matrix_base<T, N>::operator -= (const matrix_base<T, N>& rhs)
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::operator * (const T& val) const
-{
+matrix_base<T, N> matrix_base<T, N>::operator * (const T& val) const {
 	matrix_base<T, N> nhs;
 	if (N < 1) return nhs;
 	for (size_t row = 0; row < N; row++)
@@ -291,8 +252,7 @@ matrix_base<T, N> matrix_base<T, N>::operator * (const T& val) const
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N> matrix_base<T, N>::operator * (const matrix_base<T, N>& rhs) const
-{
+matrix_base<T, N> matrix_base<T, N>::operator * (const matrix_base<T, N>& rhs) const {
 	matrix_base<T, N> nhs;
 	if (N < 1) return nhs;
 	for (size_t row = 0; row < N; row++)
@@ -306,8 +266,7 @@ matrix_base<T, N> matrix_base<T, N>::operator * (const matrix_base<T, N>& rhs) c
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator *=(const T& val) 
-{
+matrix_base<T, N>& matrix_base<T, N>::operator *=(const T& val)  {
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
 			(*this)[row][col] *= val;
@@ -315,8 +274,7 @@ matrix_base<T, N>& matrix_base<T, N>::operator *=(const T& val)
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator *= (const matrix_base<T, N>& rhs)
-{
+matrix_base<T, N>& matrix_base<T, N>::operator *= (const matrix_base<T, N>& rhs) {
 	if (N < 1) return (*this);
 
 	matrix_base<T, N> nhs;
