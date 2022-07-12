@@ -35,7 +35,7 @@
     <ClInclude Include="vect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="array.h">
+    <ClInclude Include="vectbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

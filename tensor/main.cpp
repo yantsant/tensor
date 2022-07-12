@@ -12,7 +12,7 @@ int main()
 	{
 		matrix_base<double, DIM> m0(MATRIXINITTYPE::ZERO);
 	}
-	for (size_t row = 0; row < 1000000; row++)
+	//for (size_t row = 0; row < 1000000; row++)
 	{
 		matrix_base<double, DIM>* m0 = new matrix_base<double, DIM>(MATRIXINITTYPE::ZERO);
 		matrix_base<double, DIM>* m1 = new matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
@@ -38,7 +38,9 @@ int main()
 	vect<double, 3> v3(GLOBAL_DEFAULT_BASIS<double, 3>);
 	v1 *= 1.4;
 	v1 * 0.5;
+	v1 -= v2;
 	std::cout << v1;
+	auto x = v1* v2;
 	v3 = (v1 - v2*0.5) * 0.3;
 	vect<double, 3> v5 ( v1 + v2);
 	v5.normalize();

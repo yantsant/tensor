@@ -145,7 +145,7 @@
     <ClCompile Include="tensor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="array.h" />
+    <ClInclude Include="vectbase.h" />
     <ClInclude Include="quat.h" />
     <ClInclude Include="tensor.h" />
     <ClInclude Include="vect.h" />
