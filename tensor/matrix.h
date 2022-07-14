@@ -1,12 +1,13 @@
 #pragma once
-
 #include <random>
 #include <iostream>
-//#include "vect.h"
+//#include "vectbase.h"
 enum class MATRIXINITTYPE
 {
 	ZERO,
-	INDENT
+	INDENT,
+	RANDOM,
+	//ORTOGONAL_RANDOM
 };
 
 enum class TRANSPOSE
@@ -14,21 +15,32 @@ enum class TRANSPOSE
 	TRUE,
 	FALSE
 };
-//const std::mt19937 random_engine;
-//const std::random_device rd;
-//
-//template<typename T>
-//const std::uniform_real_distribution<T> unidistr = std::uniform_real_distribution<T>((T)0, (T)1);
-//
-//template<typename T>
-//T get_uniform_value() { 
-//	return unidistr<T>(random_engine); 
-//};
 
-const size_t DIM = 3;
+extern std::random_device rd;  // Will be used to obtain a seed for the random number engine
+extern std::mt19937 gen; // Standard mersenne_twister_engine seeded with rd()
+extern std::uniform_real_distribution<double> unidistr;
+
+extern const size_t DIM;
 
 template<typename T, std::size_t N> class matrix_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix_base<T,N>& m);
+template<typename T, std::size_t N> matrix_base<T, N> generate_rand_ort();
+
+namespace matrix_generator
+{
+	template<typename T, std::size_t N>
+	matrix_base<T, N> generate_rand_ort();
+
+	template<typename T, std::size_t N>
+	matrix_base<T, N> generate_rand() {
+		std::array<std::array<T, N>, N> a;
+		for (size_t row = 0; row < N; row++)
+			for (size_t col = 0; col < N; col++)
+				a[row][col] = static_cast<T>(unidistr(gen));
+		return matrix_base<T, N>(a);
+	};
+};
+
 
 template<typename T, std::size_t N>
 class matrix_base : private std::array<std::array<T, N>, N>
@@ -38,15 +50,18 @@ class matrix_base : private std::array<std::array<T, N>, N>
 	void set_precision();
 public:
 	matrix_base(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
-	matrix_base(const matrix_base<T,N>& m);
-	inline std::array<std::array<T, N>, N> operator()() const { return static_cast<std::array<std::array<T, N>, N>>(*this); };
+	matrix_base(const matrix_base<T, N>& m);
+	matrix_base(const std::array<std::array<T, N>, N>& a);
+	inline const std::array<std::array<T, N>, N> operator()() const { return static_cast<const std::array<std::array<T, N>, N>>(*this); };
 
+	friend matrix_base<T, 3> generate_ort_rand();
 	bool        check_ort() const;
 	matrix_base transpose() const;
-	matrix_base scal     (TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
-	matrix_base transform(TRANSPOSE left, const matrix_base& op , TRANSPOSE right) const;
+	matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
+	matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
 
 	matrix_base& operator = (const T& vl);
+	//matrix_base& operator = (const matrix_base& m);
 	virtual matrix_base  operator + (const matrix_base& m) const;
 	virtual matrix_base  operator - (const matrix_base& m) const;
 	virtual matrix_base  operator * (const matrix_base& m) const;
@@ -65,6 +80,7 @@ public:
 	};
 };
 
+
 template<typename T, std::size_t N>
 void matrix_base<T, N>::set_precision()
 {
@@ -76,20 +92,27 @@ void matrix_base<T, N>::set_precision()
 	else
 		precision = (T)1 / (T)100000;
 }
+
 template<typename T, std::size_t N>
 matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m) {
 	(*this) = m;
 	set_precision();
 }
 
+template<typename T, std::size_t N>
+matrix_base<T, N>::matrix_base(const std::array<std::array<T, N>, N>& a) {
+	static_cast<std::array<std::array<T, N>, N>&>(*this) = a;
+	set_precision();
+}
+
 template<typename T, size_t N>
 bool matrix_base<T, N >::check_ort() const {
-	matrix_base<T, N> m = *this * this->transpose() - matrix_base<T, N>(MATRIXINITTYPE::INDENT);
+	matrix_base<T, N> m = *this * this->transpose();// -matrix_base<T, N>(MATRIXINITTYPE::INDENT);
 	T diag = 0;
 	T nondiag = 0;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
-			(row == col) ? diag += (*this)[row][col] : nondiag += (*this)[row][col];
+			(row == col) ? diag += m[row][col] : nondiag += m[row][col];
 	if (abs(diag - (T)N) / (T)N + abs(nondiag) <= precision)
 			return true;
 	return false;
@@ -178,13 +201,33 @@ matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) {
 		for (size_t row = 0; row < N; row++) 
 			(*this)[row][row] = (T)1; 
 		break;
+	case MATRIXINITTYPE::RANDOM:
+		for (size_t row = 0; row < N; row++)
+			for (size_t col = 0; col < N; col++)
+				(*this)[row][col] =  unidistr(gen);
+		break;
+	//case MATRIXINITTYPE::ORTOGONAL_RANDOM:
+	//	if (N != 3) throw std::length_error("MATRIXINITTYPE::ORTOGONAL_RANDOM is implemented only for 3-dimensional matrix.");
+	//	//tatic_cast<matrix_base<T, 3>>(*this) = generate_ort_rand<T,3>();
+	////	quat;
+	//	break;
 	default:
 		set_zero();
 		break;
 	}
 
+	//auto x = generate_ort_rand<double, 3>();
+	//auto y = (*this);
+	//double z;
 	set_precision();
 }
+
+//template<typename T, std::size_t N>
+//matrix_base<T, N> generate_rand() {
+//	for (size_t row = 0; row < N; row++)
+//		for (size_t col = 0; col < N; col++)
+//			(*this)[row][col] = unidistr<T>(gen);
+//}
 
 template<typename T, std::size_t N>
 matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl) {
