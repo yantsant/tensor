@@ -1,7 +1,7 @@
 #include "vectbase.h"
 #include "vect.h"
 #include "quat.h"
-#include "matrix.h"
+#include "matrbase.h"
 #include "tensor.h"
 
 template <> bool is_small_value(long double value) { return (abs(value) < 1e-13) ? true : false;}

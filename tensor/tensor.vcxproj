@@ -141,11 +141,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="matrix.h" />
+    <ClCompile Include="matrbase.h" />
     <ClCompile Include="tensor.cpp" />
     <ClCompile Include="matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="basis.h" />
     <ClInclude Include="vectbase.h" />
     <ClInclude Include="quat.h" />
     <ClInclude Include="tensor.h" />

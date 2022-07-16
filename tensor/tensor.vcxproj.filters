@@ -21,7 +21,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="matrix.h">
+    <ClCompile Include="matrbase.h">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="matrix.cpp">
@@ -39,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vectbase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="basis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

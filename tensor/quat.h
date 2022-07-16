@@ -15,26 +15,26 @@ public:
 	explicit quat(const quat& q);
 	explicit quat(const vect_base<T, 4>& q);
 	explicit quat(const T& re, const vect_base<T, 3>& im, QUATFORM type);
-	explicit quat(const T& re, const T im[3], QUATFORM type);
-	~quat() {};
+
 	void set_im(const vect_base<T, 3>& im);
 	inline vect_base<T, 3> get_im() const;
 	inline T re() const;
-	inline matrix_base<T, 3> get_ort_matrix();
-	static inline matrix_base<T, 3> get_ort_matrix(const T& angle, const vect_base<T, 3>& axis);
-	inline vect_base<T, 4>& operator()() { return *this; };
+
 	inline quat& operator = (const vect_base<T, 4>& v);
 	inline quat operator * (const quat& rhs) const;
 	inline quat operator * (const T& mult) const;
 	inline quat operator * () const;
 	inline quat operator ! () const;
+
+	inline matrix_base<T, 3> get_ort_matrix() const;
+	static inline matrix_base<T, 3> get_ort_matrix(const T& angle, const vect_base<T, 3>& axis);
 private:
 };
 
 
 template<typename T>
 quat<T>::quat() : vect_base<T, 4> ((T)0) {
-	this->set(0, 1);
+	this->set(0, (T)1);
 }; 
 
 template<typename T>
@@ -57,11 +57,6 @@ quat<T>::quat(const T& re, const vect_base<T, 3>& im, QUATFORM type) {
 };
 
 template<typename T>
-quat<T>::quat(const T& re, const T im[3], QUATFORM type) {
-
-}
-
-template<typename T>
 quat<T>::quat(const quat& q ) {
 	this->set(0, q.get(0));
 	set_im(q.get_im());
@@ -71,7 +66,6 @@ template<typename T>
 quat<T>::quat(const vect_base<T, 4>& v) {
 	(*this) = v;
 };
-
 
 template<typename T>
 inline void quat<T>::set_im(const vect_base<T, 3>& im){
@@ -83,7 +77,7 @@ inline void quat<T>::set_im(const vect_base<T, 3>& im){
 template<typename T>
 inline vect_base<T, 3> quat<T>::get_im() const{
 	vect_base<T, 3> res;
-	const quat<T>& v = *this;
+	const std::array<T, 4>& v = (*this)();
 	res.set(0, v.get(1));
 	res.set(1, v.get(2));
 	res.set(2, v.get(3));
@@ -94,7 +88,6 @@ template<typename T>
 inline T quat<T>::re() const{
 	return this->get(0);
 }
-
 
 template<typename T>
 inline quat<T>& quat<T>::operator = (const vect_base<T, 4>& v){
@@ -132,18 +125,15 @@ inline quat<T>  quat<T>::operator * (const quat<T>& rhs) const{
 	return res;
 }
 
-
 template<typename T>
-inline matrix_base<T, 3> quat<T>  ::get_ort_matrix()
-{
+inline matrix_base<T, 3> quat<T>  ::get_ort_matrix() const{
 	T wx, wy, wz, xx, yy, yz, xy, xz, zz;
 	std::array<std::array<T, 3>, 3> m;
-	const quat<T>& q0 = (*this);
-	quat<T> q(q0.get_normalize());
+	const std::array<T,4>& q = this->get_normalize()();
 
-	xx = 2.0 * q.get(1) * q.get(1);   xy = 2.0 * q.get(1) * q.get(2);   xz = 2.0 * q.get(1) * q.get(3);
-	yy = 2.0 * q.get(2) * q.get(2);   yz = 2.0 * q.get(2) * q.get(3);   zz = 2.0 * q.get(3) * q.get(3);
-	wx = 2.0 * q.get(0) * q.get(1);   wy = 2.0 * q.get(0) * q.get(2);   wz = 2.0 * q.get(0) * q.get(3);
+	xx = 2.0 * q[1] * q[1];   xy = 2.0 * q[1] * q[2];   xz = 2.0 * q[1] * q[3];
+	yy = 2.0 * q[2] * q[2];   yz = 2.0 * q[2] * q[3];   zz = 2.0 * q[3] * q[3];
+	wx = 2.0 * q[0] * q[1];   wy = 2.0 * q[0] * q[2];   wz = 2.0 * q[0] * q[3];
 
 	m[0][0] = 1.0 - (yy + zz); /*+*/ m[0][1] = xy - wz;               /*+*/  m[0][2] = xz + wy;				 /*+*/
 	m[1][0] = xy + wz;         /*+*/ m[1][1] = 1.0 - (xx + zz);       /*+*/	 m[1][2] = yz - wx;				 /*+*/
@@ -151,9 +141,7 @@ inline matrix_base<T, 3> quat<T>  ::get_ort_matrix()
 	return matrix_base<T,3>(m);
 }
 
-
 template<typename T>
-inline matrix_base<T, 3> quat<T>::get_ort_matrix(const T& angle, const vect_base<T, 3>& axis)
-{
+inline matrix_base<T, 3> quat<T>::get_ort_matrix(const T& angle, const vect_base<T, 3>& axis){
 	return quat<T>(angle, axis, QUATFORM::ANGLEAXIS).get_ort_matrix();
 }

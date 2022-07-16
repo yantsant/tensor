@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include "matrix.h"
+#include "matrbase.h"
 
 template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
@@ -12,6 +12,7 @@ public:
 	explicit vect_base()                       { this->fill((T)0); };
 	explicit vect_base(T val)                  { this->fill(val); };
 	explicit vect_base(std::array<T, N>& _arr) { *this = _arr;};
+	inline const std::array<T, N>& operator()() const { return *this; };
 
 	void  set(size_t idx, const T& value);
 	void  set(const vect_base&);
@@ -19,15 +20,31 @@ public:
 	void  get(std::array<T, N>&) const;
 	const std::array<T, N>& get() const;
 
+	friend std::ostream& operator<< <>(std::ostream& out, const vect_base& a);
+
+	inline vect_base  operator- () const;
+	inline vect_base& operator= (const vect_base& rhs);
+	inline vect_base  operator+ (const vect_base& rhs) const;
+	inline vect_base  operator- (const vect_base& rhs) const;
+	virtual inline T  operator* (const vect_base& v) const;
+	inline vect_base  operator* (const T& mult) const;
+	inline vect_base  operator/ (const T& div) const;
+	inline vect_base& operator= (const T& val);
+	inline vect_base& operator/=(const T& div);
+	inline vect_base& operator*=(const T& mult);
+	inline vect_base& operator+=(const vect_base& rhs);
+	inline vect_base& operator-=(const vect_base& rhs);
+
 	inline virtual vect_base         vector_product(const vect_base& rhs) const;
 	inline virtual matrix_base<T, N>  outer_product(const vect_base& rhs) const;
 
-	virtual inline T    operator * (const vect_base& v) const;
-
-	friend std::ostream& operator<< <>(std::ostream& out, const vect_base& a);
+	virtual inline T   norm() const;
+	inline vect_base   get_normalize() const;
+	inline void        normalize();
+	inline static void normalize(vect_base&);
 
 	friend vect_base<T, N > operator* (const vect_base<T, N >& v, const matrix_base<T, N >& m) {
-		vect_base <T, N> res ((T)0);
+		vect_base <T, N> res((T)0);
 		const std::array<std::array<T, N>, N>& matr = m();
 		for (size_t row = 0; row < N; row++)
 			for (size_t col = 0; col < N; col++)
@@ -46,92 +63,96 @@ public:
 		return res;
 	}
 
-	inline std::array<T, N>& operator()() { return *this; };
+};
 
-	inline vect_base  operator- () const {
-		vect_base<T, N> res;
+template<typename T, size_t N>
+inline vect_base<T, N> vect_base<T,N>::operator- () const {
+	vect_base<T, N> res;
+	for (size_t row = 0; row < N; row++)
+		res[row] = -(*this)[row];
+	return res;
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator= (const vect_base& rhs) {
+	vect_base<T, N> res;
+	for (size_t row = 0; row < N; row++)
+		(*this)[row] = rhs[row];
+	return *this;
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N> vect_base<T, N>::operator+ (const vect_base& rhs) const {
+	vect_base<T, N> res;
+	for (size_t row = 0; row < N; row++)
+		res[row] = (*this)[row] + rhs[row];
+	return res;
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N> vect_base<T, N>::operator- (const vect_base& rhs) const {
+	vect_base<T, N> res;
+	for (size_t row = 0; row < N; row++)
+		res[row] = (*this)[row] - rhs[row];
+	return res;
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N> vect_base<T, N>::operator * (const  T& mult) const {
+	vect_base<T, N> res;
+	for (size_t row = 0; row < N; row++)
+		res[row] = (*this)[row] * mult;
+	return res;
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N> vect_base<T, N>::operator / (const  T& div) const {
+	vect_base<T, N> res;
+	if (abs(div) > (T)0) {
+		T mult = (T)1 / div;
 		for (size_t row = 0; row < N; row++)
-			res[row] = -(*this)[row];
-		return res;
-	};
-
-	inline vect_base&  operator= (const vect_base& rhs) {
-		vect_base<T, N> res;
-		for (size_t row = 0; row < N; row++)
-			(*this)[row] = rhs[row];
-		return *this;
-	};
-
-	inline vect_base  operator+ (const vect_base& rhs) const {
-		vect_base<T, N> res;
-		for (size_t row = 0; row < N; row++)
-			res[row] = (*this)[row] + rhs[row];
-		return res;
-	};
-
-
-	inline vect_base  operator- (const vect_base& rhs) const {
-		vect_base<T, N> res;
-		for (size_t row = 0; row < N; row++)
-			res[row] = (*this)[row] - rhs[row];
-		return res;
-	};
-
-	inline vect_base operator * (const  T& mult) const {
-		vect_base<T, N> res;
-			for (size_t row = 0; row < N; row++)
-				res[row] = (*this)[row] * mult;
-		return res;
-	};
-
-	inline vect_base operator / (const  T& div) const {
-		vect_base<T, N> res;
-		if (abs(div) > (T)0){
-			T mult = (T)1 / div;
-			for (size_t row = 0; row < N; row++)
-				res[row] = (*this)[row] * mult;
-		}
-		return res;
-	};
-
-	inline vect_base& operator /= (const  T& div) {
-		vect_base<T, N> res;
-		if (abs(div) > (T)0){
-			T mult = (T)1 / div;
-			for (size_t row = 0; row < N; row++)
-				(*this)[row] *= mult;
-		}
-		return *this;
-	};
-
-	inline vect_base& operator = (const T& val) {
-		fill(val);
-		return (*this);
+			res[row] = (*this)[row] * mult;
 	}
+	return res;
+};
 
-	inline vect_base& operator *=(const T& mult) {
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator /= (const  T& div) {
+	vect_base<T, N> res;
+	if (abs(div) > (T)0) {
+		T mult = (T)1 / div;
 		for (size_t row = 0; row < N; row++)
 			(*this)[row] *= mult;
-		return (*this);
-	};
-
-	inline vect_base& operator +=(const vect_base& rhs) {
-		for (size_t row = 0; row < N; row++)
-			(*this)[row] += rhs[row];
-		return *this;
 	}
-	inline vect_base& operator -=(const vect_base& rhs) {
-		for (size_t row = 0; row < N; row++)
-			(*this)[row] -= rhs[row];
-		return *this;
-	}
-
-
-	virtual inline T   norm() const;
-	inline vect_base   get_normalize() const;
-	inline void        normalize();
-	inline static void normalize(vect_base&);
+	return *this;
 };
+
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator = (const T& val) {
+	fill(val);
+	return (*this);
+}
+
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator *=(const T& mult) {
+	for (size_t row = 0; row < N; row++)
+		(*this)[row] *= mult;
+	return (*this);
+};
+
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator +=(const vect_base& rhs) {
+	for (size_t row = 0; row < N; row++)
+		(*this)[row] += rhs[row];
+	return *this;
+}
+
+template<typename T, size_t N>
+inline vect_base<T, N>& vect_base<T, N>::operator -=(const vect_base& rhs) {
+	for (size_t row = 0; row < N; row++)
+		(*this)[row] -= rhs[row];
+	return *this;
+}
 
 template<typename T, size_t N>
 std::ostream& operator<<(std::ostream& out, const vect_base<T,N>& a){

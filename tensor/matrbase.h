@@ -1,7 +1,6 @@
 #pragma once
 #include <random>
 #include <iostream>
-//#include "vectbase.h"
 enum class MATRIXINITTYPE{
 	NOINIT,
 	ZERO,
@@ -48,15 +47,10 @@ public:
 	matrix_base(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
 	matrix_base(const matrix_base<T, N>& m);
 	matrix_base(const std::array<std::array<T, N>, N>& a);
-	inline const std::array<std::array<T, N>, N> operator()() const { return static_cast<const std::array<std::array<T, N>, N>>(*this); };
+	inline const std::array<std::array<T, N>, N>& operator()() const { return *this; };
 
-	friend matrix_base<T, 3> generate_ort_rand();
-	bool        check_ort() const;
-	matrix_base transpose() const;
-	matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
-	matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
-	virtual T    convolution(const matrix_base<T, N>& rhs) const;
 
+	friend std::ostream& operator<< <>(std::ostream& out, const matrix_base& a);
 	matrix_base& operator = (const T& vl);
 	virtual matrix_base  operator + (const matrix_base& m) const;
 	virtual matrix_base  operator - (const matrix_base& m) const;
@@ -67,7 +61,12 @@ public:
 	virtual matrix_base& operator *=(const matrix_base& m);
 	virtual matrix_base& operator *=(const T& val);
 
-	friend std::ostream& operator<< <>(std::ostream& out, const matrix_base& a);
+	bool        check_ort() const;
+	matrix_base transpose() const;
+	matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
+	matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
+	virtual T    convolution(const matrix_base<T, N>& rhs) const;
+
 	friend void transpose(matrix_base& m)	{
 		for (size_t row = 0; row < N; row++)
 			for (size_t col = row + 1; col < N; col++)
