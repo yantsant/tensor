@@ -2,7 +2,6 @@
 #include <array>
 #include "matrix.h"
 
-
 template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
 
@@ -10,8 +9,8 @@ template<typename T, size_t N>
 class vect_base : private std::array<T, N>
 {
 public:
-	explicit vect_base()                       { *this = (T)0;};
-	explicit vect_base(T val)                  { *this = val; };
+	explicit vect_base()                       { this->fill((T)0); };
+	explicit vect_base(T val)                  { this->fill(val); };
 	explicit vect_base(std::array<T, N>& _arr) { *this = _arr;};
 
 	void  set(size_t idx, const T& value);
@@ -20,8 +19,8 @@ public:
 	void  get(std::array<T, N>&) const;
 	const std::array<T, N>& get() const;
 
-	inline static  vect_base vector_product(const vect_base& lhs, const vect_base& rhs);
-	inline virtual vect_base vector_product(const vect_base& rhs) const;
+	inline virtual vect_base         vector_product(const vect_base& rhs) const;
+	inline virtual matrix_base<T, N>  outer_product(const vect_base& rhs) const;
 
 	virtual inline T    operator * (const vect_base& v) const;
 
@@ -54,6 +53,13 @@ public:
 		for (size_t row = 0; row < N; row++)
 			res[row] = -(*this)[row];
 		return res;
+	};
+
+	inline vect_base&  operator= (const vect_base& rhs) {
+		vect_base<T, N> res;
+		for (size_t row = 0; row < N; row++)
+			(*this)[row] = rhs[row];
+		return *this;
 	};
 
 	inline vect_base  operator+ (const vect_base& rhs) const {
@@ -98,9 +104,8 @@ public:
 		return *this;
 	};
 
-	inline vect_base& operator = (const T& mult) {
-		for (size_t row = 0; row < N; row++)
-			(*this)[row] = mult;
+	inline vect_base& operator = (const T& val) {
+		fill(val);
 		return (*this);
 	}
 
@@ -137,23 +142,27 @@ std::ostream& operator<<(std::ostream& out, const vect_base<T,N>& a){
 }
 
 template<typename T, size_t N>
-inline  vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N>& lhs, const vect_base<T, N >& rhs) {
-	if (N == 3)
-	{
+inline vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N >& rhs) const {
+	if (N == 3){
+		const vect_base<T, N>& lhs = *this;
 		vect_base<T, N> res;
-		res.set(0, lhs[1] * rhs[2] - lhs[2] * rhs[1]);
-		res.set(1, lhs[2] * rhs[0] - lhs[0] * rhs[2]);
-		res.set(2, lhs[0] * rhs[1] - lhs[1] * rhs[0]);
+		res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
+		res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
+		res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
 		return res;
 	}
 	else throw std::length_error("vector_product is implemented only for 3-dimensional vectors.");
 }
 
 template<typename T, size_t N>
-inline vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N >& rhs) const {
-	return vector_product(*this, rhs);
+inline matrix_base<T, N> vect_base<T, N >::outer_product(const vect_base<T, N >& rhs) const {
+	const vect_base<T, N>& lhs = *this;
+	std::array< std::array<T, N>,N> res;
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = 0; col < N; col++)
+			res[row][col] = lhs[row] * rhs[col];
+	return static_cast<matrix_base<T, N>> (res);
 }
-
 
 template<typename T, size_t N>
 inline void vect_base<T, N >::set(size_t idx, const T& value){

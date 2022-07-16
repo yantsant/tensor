@@ -18,34 +18,44 @@ int main()
 	v0.set(2, -0.5);
 	matrix_base<double, DIM> dR = quat<double>(0.01, v0, QUATFORM::ANGLEAXIS).get_ort_matrix();
 	matrix_base<double, DIM> m0 (MATRIXINITTYPE::INDENT);
-	Tensor<double, DIM> t0(MATRIXINITTYPE::INDENT, m0);
-	Tensor<double, DIM> t1(MATRIXINITTYPE::INDENT, m0);
-	matrix_base<double, DIM> R(matrix_generator::generate_rand_ort<double, DIM>());
-	matrix_base<double, DIM> Q(matrix_generator::generate_rand_ort<double, DIM>());
-	matrix_base<double, DIM> A(matrix_generator::generate_rand    <double, DIM>());
-	matrix_base<double, DIM> I(MATRIXINITTYPE::INDENT);
-	Tensor<double, DIM> t2(A, R);
-	for (size_t i = 0; i < 100; i++)
-	{
-		R *= dR;
-		t2.move_to_basis(R);
-		std::cout << t2.comp_at_basis(I);
-	}
-	t2.move_to_basis(R);
-	std::cout << t2.comp_at_basis(Q);
-	std::cout << t2.comp_at_basis(I);
-	t2.move_to_basis(I);
-	std::cout << t2.comp_at_basis(Q);
-	std::cout << t2.comp_at_basis(I);
-	t2.move_to_basis(R);
-	std::cout << t2.comp_at_basis(Q);
-	std::cout << t2.comp_at_basis(I);
-	t0 = 2.0;
-	t1 = 3.0;
-	t2 += t1;
-	t2 += t0;
+	dR.scal(TRANSPOSE::TRUE, m0, TRANSPOSE::TRUE);
+	double x = dR.convolution(m0);
+//	Tensor<double, DIM> t0(MATRIXINITTYPE::INDENT, m0);
+//	Tensor<double, DIM> t1(MATRIXINITTYPE::INDENT, m0);
+//	matrix_base<double, DIM> R(matrix_generator::generate_rand_ort<double, DIM>());
+//	matrix_base<double, DIM> Q(matrix_generator::generate_rand_ort<double, DIM>());
+//	matrix_base<double, DIM> A(matrix_generator::generate_rand    <double, DIM>());
+//	matrix_base<double, DIM> I(MATRIXINITTYPE::INDENT);
+//	Tensor<double, DIM> t2(A, R);
+//	for (size_t i = 0; i < 100; i++)
+//	{
+//		R *= dR;
+//		t2.move_to_basis(R);
+//		std::cout << t2.comp_at_basis(I);
+//	}
+//	double y = t0.convolution(t1);
+//	t2.move_to_basis(R);
+//	std::cout << t2.comp_at_basis(Q);
+//	std::cout << t2.comp_at_basis(I);
+//	t2.move_to_basis(I);
+//	std::cout << t2.comp_at_basis(Q);
+//	std::cout << t2.comp_at_basis(I);
+//	t2.move_to_basis(R);
+//	std::cout << t2.comp_at_basis(Q);
+//	std::cout << t2.comp_at_basis(I);
+//	t0 = 2.0;
+//	t1 = 3.0;
+//	t2 += t1;
+//	t2 += t0;
 //
-//	Vector<double, 3> v1(-1.0, GLOBAL_DEFAULT_BASIS<double, 3>);
+	Vector<double, 3> v1(-1.0, GLOBAL_DEFAULT_BASIS<double, 3>);
+	Vector<double, 3> v2( 1.0, GLOBAL_DEFAULT_BASIS<double, 3>);
+	auto M = v1.outer_product(v2); 
+	matrix_base<double, DIM> R(matrix_generator::generate_rand_ort<double, DIM>());
+	v1.change_basis(R);
+	v1.change_basis(R.transpose() );
+	std::cout << v1;
+	v1+v2;
 //	t2* t1;
 //	v1 = t1 * v1;
 //	v1 = v1 * t1;
