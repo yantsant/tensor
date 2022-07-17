@@ -10,18 +10,20 @@ const matrix_base<T, N> GLOBAL_DEFAULT_BASIS = matrix_base<T, N>(MATRIXINITTYPE:
 
 
 template<typename T, size_t N>
-class Vector : private basis_handler<T, N, vect_base<T, N>>, 
-			   public vect_base<T, N>
+class Vector : private basis_handler<T, N, matrix_base<T, N>, vect_base<T, N>>,
+			   protected vect_base<T, N>
 {
+	typedef  vect_base    <T, N>          _vector;
+	typedef  matrix_base  <T, N>          _matrix;
+	typedef  basis_handler<T, N, _matrix, _vector> _handler;
+	typedef  shared_handler_object<const _matrix>  _shared;
 public:
-	virtual void    change_basis(const matrix_base<T, N>& m) override;
-	vect_base<T, N> get_comp_at_basis(const matrix_base<T, N>& m) const override; // calc comp of this at basis
+	virtual void      change_basis     (const _shared& m) override;
+	vect_base<T, N>   get_comp_at_basis(const _shared& m) const override; // calc comp of this at basis
 
-	Vector(const matrix_base<T, N>& m) : basis_handler<T, N>(m) {	};
-	Vector(const T& val             , const matrix_base<T, N>& m) : vect_base<T, N>(val), basis_handler<T, N, vect_base<T, N>>(m) {};
-	Vector(const vect_base<T, N>& v , const matrix_base<T, N>& m) : vect_base<T, N>(v)  , basis_handler<T, N, vect_base<T, N>>(m) {};
-	Vector(const Vector<T, N>& v    , const matrix_base<T, N>& m);
-	Vector(const std::array<T, N>& a, const matrix_base<T, N>& m);
+	Vector(const _vector& comp, const _matrix& basis) : _vector(comp), _handler(basis) {};
+	Vector(const _vector& comp, const _shared& basis) : _vector(comp), _handler(basis) {};
+	Vector(const  Vector& vect) : _vector(static_cast<_vector>(vect)), _handler(static_cast<const _handler&>(vect)()) {};
 
 	inline Vector  operator - ();
 	inline Vector& operator = (const Vector<T, N>& v);
@@ -35,30 +37,20 @@ public:
 };
 
 template<typename T, size_t N>
-void Vector<T, N>::change_basis(const matrix_base<T, N>& m) {
+void Vector<T, N>::change_basis(const shared_handler_object<const matrix_base<T, N>>& m) {
 	static_cast<vect_base<T, N>&>(*this) = get_comp_at_basis(m);
 	this->set_basis(m);
 }
 
 template<typename T, size_t N>
-Vector<T, N>::Vector(const Vector<T, N>& v, const matrix_base<T, N>& m) : basis_handler<T, N>(m) {
-	static_cast<vect_base<T, N>&>(vect_base<T, N>::operator=(v));
-};
-
-template<typename T, size_t N>
-Vector<T, N>::Vector(const std::array<T, N>& a, const matrix_base<T, N>& m) : basis_handler<T, N>(m){
-	static_cast< std::array<T, N>&>(std::array<T, N>::operator=(a));
-};
-
-template<typename T, size_t N>
-vect_base<T, N> Vector<T, N>::get_comp_at_basis(const matrix_base<T, N>& m) const {
+vect_base<T, N> Vector<T, N>::get_comp_at_basis(const shared_handler_object<const matrix_base<T, N>>& m) const {
 	vect_base<T, N> res;
 	if (this->same_basis(m)) {
 		res = static_cast<vect_base<T, N>>(*this);
 	}
 	else {
-		const matrix_base<T, N>& Rl = this->get_basis();
-		const matrix_base<T, N>& Rr = m.transpose();
+		const matrix_base<T, N>& Rl = this->get_stored_object();
+		const matrix_base<T, N>& Rr = m.get_stored_object().transpose()();
 		const vect_base<T, N>& comp = static_cast<const vect_base<T, N>&> (*this);
 		res = (comp * Rl) * Rr;
 	}
