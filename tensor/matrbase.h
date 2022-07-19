@@ -43,15 +43,21 @@ template<typename T, std::size_t N>
 class matrix_base : private std::array<std::array<T, N>, N>
 {
 	void set_zero();
+
+	typedef  std::array<std::array<T, N>, N>  _array;
+protected:
 public:
-	matrix_base(MATRIXINITTYPE IT = MATRIXINITTYPE::ZERO);
-	matrix_base(const matrix_base<T, N>& m);
+	matrix_base(MATRIXINITTYPE IT);
+	matrix_base(const matrix_base&  m) : _array(static_cast<const _array& >(m)){};
+	matrix_base(const matrix_base&& m) : _array(static_cast<const _array&&>(m)) {};
+
 	matrix_base(const std::array<std::array<T, N>, N>& a);
-	inline const std::array<std::array<T, N>, N>& operator()() const { return *this; };
+	inline const _array& operator()() const { return *this; };
 
 
 	friend std::ostream& operator<< <>(std::ostream& out, const matrix_base& a);
 	matrix_base& operator = (const T& vl);
+	inline  matrix_base& operator = (const matrix_base& rhs);
 	virtual matrix_base  operator + (const matrix_base& m) const;
 	virtual matrix_base  operator - (const matrix_base& m) const;
 	virtual matrix_base  operator * (const matrix_base& m) const;
@@ -73,11 +79,6 @@ public:
 				std::swap(m[row][col], m[col][row]);
 	};
 };
-
-template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m) {
-	(*this) = m;
-}
 
 template<typename T, std::size_t N>
 matrix_base<T, N>::matrix_base(const std::array<std::array<T, N>, N>& a) {
@@ -152,6 +153,11 @@ matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base
 	}
 }
 
+template<typename T, std::size_t N>
+matrix_base<T, N>& matrix_base<T, N>::operator = (const matrix_base<T, N>& rhs) {
+	static_cast<std::array<std::array<T, N>, N>&>(*this) = static_cast<const std::array<std::array<T, N>, N>&>(rhs);
+	return *this;
+}
 
 template<typename T, std::size_t N>
 matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl) {

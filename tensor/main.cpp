@@ -49,25 +49,40 @@ void quternion_unit_test()
 }
 void tensor_unit_test()
 {
+	auto mm = matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
+	shared_handler_basis<double, DIM> rr(mm);
+	//typedef std::shared_ptr<> shared_handler;
 	std::shared_ptr<double> xx = std::make_shared<double>();
-	for (size_t i = 0; i < 10000; i++)
+	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
+	shared_handler_basis<double, DIM> MM0(*R);
+	//for (size_t i = 0; i < 1000000; i++)
 	{
 		matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 		matrix_base<double, DIM>* Q = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
-		auto sm1 = new shared_handler_object<const matrix_base<double, DIM>>(*R);
-		//auto sm2 = new shared_handler_object<const matrix_base<double, DIM>>(*sm1);
-		//auto sm3 = new shared_handler_object<const matrix_base<double, DIM>>(*sm1);
+		auto sm1 = new shared_handler_basis<double, DIM>(*R);
+		auto sm2 = new shared_handler_basis<double, DIM>(*Q);
 		Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
-		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *Q);
+		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *sm2);
 		Tensor<double, DIM> t3(*t2);
+	
+		*R *= 10;
 		delete R;
+		bool ort = sm1->as_matrix().check_ort();
+		sm1->as_matrix() *= 2.0;
+		ort = sm1->as_matrix().check_ort();
+		
+		std::cout << *t2 ;// std::cout << *sm1;
+		
+		std::cout << *t2; 
+		t2->change_basis(*sm1); //std::cout << *Q;
+		t3.change_basis(*sm1); //std::cout << *Q;
+		delete Q;
 		delete sm1;
-		*t0 = 2.0;
-		*t1 = 3.0;
+		std::cout << *t2;
 		*t2 += *t1;
 		*t2 += *t0;
-		//delete sm1;
+		
 		//matrix_base<double, DIM> mm = sm3->get_ptr();
 		delete t0;
 		delete t1;
@@ -80,17 +95,22 @@ void tensor_unit_test()
 void vector_unit_test()
 {
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
-	auto sm1 = new shared_handler_object<const matrix_base<double, DIM>>(*R);
+	auto sm1 = new  shared_handler_basis<double, DIM>(*R);
 	vect_base<double, DIM> v0;
-	v0.set(0, 1.0);
-	v0.set(1, 1.5);
-	v0.set(2, -0.5);
+	v0.set_comp(0, 1.0);
+	v0.set_comp(1, 1.5);
+	v0.set_comp(2, -0.5);
 	Vector<double, 3> V0(v0, *sm1);
 	Vector<double, 3> V1(v0, *sm1);
+	Vector<double, 3> V3 = std::move( V0 + V1);
+
 	Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 	Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
+	Tensor<double, DIM>  t2 = outer_product(V0, V3); std::cout << t2;
+	Tensor<double, DIM>  t3 = outer_product(V3, V0); std::cout << t3;
 	//Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, V0());
 	//Vector<double, 3> V1(v0, (*t0)());
+	return;
 }
 int main()
 {

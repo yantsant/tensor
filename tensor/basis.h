@@ -1,44 +1,31 @@
 #pragma once
-template<typename M>
-class shared_handler_object
+#include "matrbase.h"
+
+template<typename T, size_t N>
+class shared_handler_basis : public std::shared_ptr<matrix_base<T, N>>
 {
-	std::shared_ptr<const M> ptr;
+	static const shared_handler_basis<T, N> GLOBAL_DEFAULT_BASIS;
+	typedef  matrix_base<T, N> M;
+	typedef  shared_handler_basis<T,N> _shared;
 protected:
-	const M* get_ptr()                              const       { return ptr.get(); }
-	void     set_ptr(const shared_handler_object<const M>& sh)  { ptr = sh.ptr;}
+	explicit shared_handler_basis(const shared_handler_basis&  sh) : std::shared_ptr<matrix_base<T, N>>(sh) {}; // to prevent multiply owning out of scope of Vector/Tensor
+	shared_handler_basis& operator = (const shared_handler_basis& sh) { std::shared_ptr<M>::operator=(sh); return *this; };
+
+	const void     set_basis(const _shared& rhs) { *this = (rhs); }
 public:
-	shared_handler_object(const shared_handler_object& sh) { ptr = sh.ptr; }
-	shared_handler_object(const M& m) { ptr = std::make_shared<const M>(m); };
-
-	bool same_basis(const shared_handler_object<const M>& sh) const { return (this->get_ptr() == sh.get_ptr()) ? true : false; };
-
-	M&       get_stored_object()       { return *ptr.get(); };
-	const M& get_stored_object() const { return *ptr.get(); };
-};
-
-template<typename T, size_t N, typename comp_type, typename comp_type_2>
-class basis_handler : public shared_handler_object<const comp_type>
-{
-	typedef  shared_handler_object<const comp_type> _shared;
-protected:
-	basis_handler(const matrix_base<T, N>& m) : _shared(m) {
-		if (!m.check_ort()) throw std::invalid_argument("basis matrix is not ortogonal");
-	}
-	basis_handler(const _shared& m) : _shared(m) {
-		if (!m.get_stored_object().check_ort()) throw std::invalid_argument("basis matrix is not ortogonal");
+	shared_handler_basis(const shared_handler_basis&& sh) : std::shared_ptr<matrix_base<T, N>>(sh) {};
+	explicit shared_handler_basis(const matrix_base<T, N>& m) : std::shared_ptr<matrix_base<T, N>>(std::make_shared<matrix_base<T, N>>(m)) {
+		if (!m.check_ort()) throw std::invalid_argument("basis matrix is not ortogonal"); // optionally checking of basis
 	}
 
-	const _shared& get_basis()           const { return (*this)(); }
-	const void     set_basis(const _shared& p) {
-		if (!p.get_stored_object().check_ort()) throw std::invalid_argument("basis matrix is not ortogonal");
-		this->set_ptr(p);
-	};
-public:
-	const  _shared& operator()() const { return *this; };
-
-	virtual comp_type_2 get_comp_at_basis(const _shared& bh) const = 0;
+	matrix_base<T, N>& as_matrix() { return *this->get(); }; // only creator from matrix_base have access from outer scope, also Tensor/Vector have access  
 	/* WARNING : CHANGE Object: move to the target basis m, just basis changes*/
 	void            move_to_basis(const _shared& m) { set_basis(m); };
 	/* not change object: just recalc components*/
-	virtual void    change_basis(const _shared& m) = 0;
+	virtual void    change_basis (const _shared& m) { set_basis(m); }; // must be overrided in chldren classes
+
+	friend std::ostream& operator<< (std::ostream& out, const shared_handler_basis& t) { out << *(t.get()); return out; };
 };
+
+template<typename T, size_t N>
+const shared_handler_basis<T, N> GLOBAL_DEFAULT_BASIS = shared_handler_basis<T, N>(matrix_base<T, N>(MATRIXINITTYPE::INDENT));
