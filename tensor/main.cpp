@@ -61,6 +61,7 @@ void tensor_unit_test()
 		matrix_base<double, DIM>* Q = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 		auto sm1 = new shared_handler_basis<double, DIM>(*R);
 		auto sm2 = new shared_handler_basis<double, DIM>(*Q);
+		// shared_handler_basis<double, DIM> MMX = *sm1; // restricted operation to prevent multiply owning
 		Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *sm2);
@@ -81,7 +82,8 @@ void tensor_unit_test()
 		delete sm1;
 		std::cout << *t2;
 		*t2 += *t1;
-		*t2 += *t0;
+		*t2 -= *t0;
+		*t2 *= *t0;
 		
 		//matrix_base<double, DIM> mm = sm3->get_ptr();
 		delete t0;

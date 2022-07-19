@@ -4,10 +4,6 @@
 #include "vectbase.h"
 #include "matrbase.h"
 #include "basis.h"
-//template<typename T, size_t N>
-//const matrix_base<T, N> GLOBAL_DEFAULT_BASIS = matrix_base<T, N>(MATRIXINITTYPE::INDENT);
-
-
 
 template<typename T, size_t N>
 class Vector : private shared_handler_basis<T, N>,
