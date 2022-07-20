@@ -25,7 +25,7 @@ public:
 
 	friend std::ostream& operator<< <>(std::ostream& out, const Tensor& t);
 	virtual Tensor& operator = (const Tensor& t);
-	virtual Tensor& operator = (const T& value);
+	virtual Tensor& operator = (Tensor&& t) noexcept;
 	virtual Tensor  operator + (const Tensor& t) const;
 	virtual Tensor  operator - (const Tensor& t) const;
 	virtual Tensor  operator * (const Tensor& t) const;
@@ -51,13 +51,17 @@ void Tensor<T, N>::change_basis(const _handler& m) {
 }
 
 template<typename T, size_t N>
-Tensor<T, N>& Tensor<T, N>::operator = (const T& value) {
-	return static_cast<Tensor<T, N>&>(matrix_base<T, N>::operator=(value));
+Tensor<T, N>& Tensor<T, N>::operator = (Tensor<T, N>&& t) noexcept {
+	matrix_base<T, N>::operator=(static_cast<matrix_base<T, N>&&>(t));// matrix_base<T, N>::move(static_cast<matrix_base<T, N>&&>(t));
+	shared_handler_basis<T, N>::move(static_cast<shared_handler_basis<T, N>&&>(t));
+	return *this;
 };
 
 template<typename T, size_t N>
 Tensor<T, N>& Tensor<T, N>::operator = (const Tensor<T, N>& t)  {
-	return static_cast<Tensor<T, N>&>(matrix_base<T, N>::operator=(t.get_comp_at_basis(*this)));
+	static_cast<matrix_base<T, N>&>(matrix_base<T, N>::operator=(t));
+	static_cast<shared_handler_basis<T, N>&>(shared_handler_basis<T, N>::operator=(t));
+	return *this;
 };
 
 template<typename T, size_t N>

@@ -12,6 +12,10 @@ protected:
 	explicit shared_handler_basis(const shared_handler_basis&  sh) : std::shared_ptr<matrix_base<T, N>>(sh) {}; // to prevent multiply owning out of scope of Vector/Tensor
 	shared_handler_basis& operator = (const shared_handler_basis& sh) { std::shared_ptr<M>::operator=(sh); return *this; };
 
+	shared_handler_basis& move(shared_handler_basis&& rhs) {
+		static_cast<_shared&>(*this) = std::move(static_cast<_shared&&>(rhs));
+		return *this;
+	};
 	const void     set_basis(const _shared& rhs) { *this = (rhs); }
 public:
 	shared_handler_basis(const shared_handler_basis&& sh) : std::shared_ptr<matrix_base<T, N>>(sh) { owner = std::move(sh.owner); };

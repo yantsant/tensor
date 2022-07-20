@@ -39,6 +39,22 @@ namespace matrix_generator
 	};
 };
 
+
+
+template<typename T, std::size_t N>
+class matrix_moveable
+{
+	std::array<std::array<T, N>, N>*  _array;
+public:
+	matrix() {
+		_array = new std::array<std::array<T, N>, N>;
+		for (auto& row : *_array)
+			for (auto& col : row)
+				col = (T)3.3;
+	}
+	std::array<T, N>& operator [](size_t i) { return (*_array)[i]; };
+};
+
 template<typename T, std::size_t N>
 class matrix_base : private std::array<std::array<T, N>, N>
 {
@@ -66,6 +82,15 @@ public:
 	virtual matrix_base& operator -=(const matrix_base& m);
 	virtual matrix_base& operator *=(const matrix_base& m);
 	virtual matrix_base& operator *=(const T& val);
+	matrix_base& move(matrix_base&& rhs) {
+		static_cast<_array&>(*this) = std::move((rhs));
+		return *this;
+	};
+
+	matrix_base& operator = (matrix_base&& m) noexcept {
+		*this = matrix_base::move(static_cast<matrix_base&&>(m));
+		return *this;
+	};
 
 	bool        check_ort() const;
 	matrix_base transpose() const;

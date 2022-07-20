@@ -60,7 +60,9 @@ Vector<T, N> Vector<T, N>::operator - () {
 
 template<typename T, size_t N>
 Vector<T, N>& Vector<T, N>::operator = (const Vector<T, N>& v) {
-	return static_cast<Vector<T, N>&>(vect_base<T, N>::operator=(v.get_comp_at_basis(*this)));
+	static_cast<vect_base<T, N>&>(vect_base<T, N>::operator=(v));
+	static_cast<shared_handler_basis<T, N>&>(shared_handler_basis<T, N>::operator=(v));
+	return *this;
 }
 
 template<typename T, size_t N>

@@ -142,7 +142,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="matrbase.h" />
-    <ClCompile Include="tensor.cpp" />
     <ClCompile Include="matrix.cpp" />
   </ItemGroup>
   <ItemGroup>

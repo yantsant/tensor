@@ -47,8 +47,24 @@ void quternion_unit_test()
 	//q2 = q1 * 0.5;
 	//q3 = q1 + q2;
 }
+void matrix_unit_test()
+{
+	matrix<double, 3> m;
+	std::array<double, 3>& a = m[0];
+	double el = m[0][1];
+	m[0][2] = 1;
+	return;
+}
 void tensor_unit_test()
 {
+
+	std::array<double, 3> M1;
+	std::array<double, 3> M2;
+	M1 = std::move(M2);
+	std::vector<std::vector<double>> V1(10);
+	std::vector<std::vector<double>> V2(20);
+	V1 = std::move(V2);
+
 	auto mm = matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
 	shared_handler_basis<double, DIM> rr(mm);
 	//typedef std::shared_ptr<> shared_handler;
@@ -66,8 +82,10 @@ void tensor_unit_test()
 		Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *sm2);
 		Tensor<double, DIM> t3(*t2);
-	
-		*R *= 10;
+		//*t0 += *t0;
+		*R = std::move(*Q);
+		*t0 = std::move(*t2);
+		//*R *= 10;
 		delete R;
 		bool ort = sm1->as_matrix().check_ort();
 		sm1->as_matrix() *= 2.0;
@@ -116,6 +134,7 @@ void vector_unit_test()
 }
 int main()
 {
+	matrix_unit_test();
 	tensor_unit_test();
 	vector_unit_test();
 
