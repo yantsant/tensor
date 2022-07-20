@@ -49,17 +49,16 @@ void quternion_unit_test()
 }
 void matrix_unit_test()
 {
-	matrix<double, 3> m;
-	std::array<double, 3>& a = m[0];
-	double el = m[0][1];
-	m[0][2] = 1;
-	return;
+	//matrix<double, 3> m;
+	//std::array<double, 3>& a = m[0];
+	//double el = m[0][1];
+	//m[0][2] = 1;
+	//return;
 }
 void tensor_unit_test()
 {
-
-	std::array<double, 3> M1;
-	std::array<double, 3> M2;
+	auto M1 = matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
+	auto M2 = matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
 	M1 = std::move(M2);
 	std::vector<std::vector<double>> V1(10);
 	std::vector<std::vector<double>> V2(20);
@@ -71,7 +70,7 @@ void tensor_unit_test()
 	std::shared_ptr<double> xx = std::make_shared<double>();
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 	shared_handler_basis<double, DIM> MM0(*R);
-	//for (size_t i = 0; i < 1000000; i++)
+	for (size_t i = 0; i < 1000000; i++)
 	{
 		matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 		matrix_base<double, DIM>* Q = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
@@ -82,9 +81,11 @@ void tensor_unit_test()
 		Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *sm2);
 		Tensor<double, DIM> t3(*t2);
+		*t0 = *t2;
+		*t0 = std::move(*t2);
+		*t2 = std::move(*t0);
 		//*t0 += *t0;
 		*R = std::move(*Q);
-		*t0 = std::move(*t2);
 		//*R *= 10;
 		delete R;
 		bool ort = sm1->as_matrix().check_ort();
@@ -98,10 +99,11 @@ void tensor_unit_test()
 		t3.change_basis(*sm1); //std::cout << *Q;
 		delete Q;
 		delete sm1;
-		std::cout << *t2;
-		*t2 += *t1;
+		delete sm2;
+		//std::cout << *t2;
 		*t2 -= *t0;
 		*t2 *= *t0;
+		*t2 += *t1;
 		
 		//matrix_base<double, DIM> mm = sm3->get_ptr();
 		delete t0;
@@ -117,9 +119,9 @@ void vector_unit_test()
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 	auto sm1 = new  shared_handler_basis<double, DIM>(*R);
 	vect_base<double, DIM> v0;
-	v0.set_comp(0, 1.0);
-	v0.set_comp(1, 1.5);
-	v0.set_comp(2, -0.5);
+	v0[0] = 1.0;
+	v0[1] = 1.5;
+	v0[2] = -0.5;
 	Vector<double, 3> V0(v0, *sm1);
 	Vector<double, 3> V1(v0, *sm1);
 	Vector<double, 3> V3 = std::move( V0 + V1);

@@ -6,27 +6,31 @@ template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
 
 template<typename T, size_t N>
-class vect_base : private std::array<T, N>
+class vect_base // : private std::array<T, N>
 {
 	typedef  std::array<T, N>  _array;
-public:
-	explicit vect_base()             { this->fill((T)0); };
-	explicit vect_base(T val)        { this->fill(val); };
-	explicit vect_base(_array& _arr) { *this = _arr;};
-	inline const _array& operator()() const { return *this; };
-	vect_base(const vect_base&  v) : _array(v) {}; // copy constructor
-	vect_base(const vect_base&& v) : _array(v) {}; // move constructor
 
-	void  set_comp(size_t idx, const T& value);
-	void  set_comp(const vect_base&);
-	T     get_comp(size_t idx) const;
-	void  get_comp(_array&) const;
+	std::array<T, N>* _Elem = nullptr;
+
+	void _alloc() { _Elem = new std::array<T, N>; };
+	void _reset() { delete _Elem; _Elem = nullptr; };
+public:
+	      T& operator [](size_t i)          { return (*_Elem)[i]; };
+	const T& operator [](size_t i) const    { return (*_Elem)[i]; };
+	explicit vect_base()                    { _Elem->fill((T)0); };
+	explicit vect_base(T val)               { _Elem->fill(val); };
+	explicit vect_base(_array& _arr)        { *_Elem = _arr;};
+	inline const _array& operator()() const { return *_Elem; };
+	vect_base(const vect_base&  v) { _alloc(); *_Elem = *v._Elem;}; // copy constructor
+	vect_base(vect_base&& v) { _Elem = v._Elem; v._Elem = nullptr; }; // move constructor
+
 	const std::array<T, N>& get_comp() const;
 
 	friend std::ostream& operator<< <>(std::ostream& out, const vect_base& a);
 
 	inline vect_base  operator- () const;
 	inline vect_base& operator= (const vect_base& rhs);
+	inline vect_base& operator= (vect_base&& v) noexcept { _reset(); _Elem = v._Elem; v._Elem = nullptr; return *this; };
 	inline vect_base  operator+ (const vect_base& rhs) const;
 	inline vect_base  operator- (const vect_base& rhs) const;
 	virtual inline T  operator* (const vect_base& v) const;
@@ -65,7 +69,6 @@ public:
 
 		return res;
 	}
-
 };
 
 template<typename T, size_t N>
@@ -186,26 +189,6 @@ inline matrix_base<T, N> vect_base<T, N >::outer_product(const vect_base<T, N >&
 		for (size_t col = 0; col < N; col++)
 			res[row][col] = lhs[row] * rhs[col];
 	return static_cast<matrix_base<T, N>> (res);
-}
-
-template<typename T, size_t N>
-inline void vect_base<T, N >::set_comp(size_t idx, const T& value){
-	if (idx > N - 1 || N < 0) throw std::out_of_range("invalid index");
-	(*this)[idx] = value;
-}
-
-template<typename T, size_t N>
-inline void vect_base<T, N >::set_comp(const vect_base<T, N>& v) {
-	*this = v;
-}
-
-template<typename T, size_t N>
-T    vect_base<T, N >::get_comp(size_t idx) const{
-	return (*this)[idx];
-}
-template<typename T, size_t N>
-void vect_base<T, N >::get_comp(std::array<T, N>& out) const {
-	out = *this;
 }
 
 template<typename T, size_t N>
