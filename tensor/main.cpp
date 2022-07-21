@@ -89,20 +89,20 @@ void tensor_unit_test()
 		//*R *= 10;
 		delete R;
 		bool ort = sm1->as_matrix().check_ort();
-		sm1->as_matrix() *= 2.0;
+		//sm1->as_matrix() *= 2.0;
 		ort = sm1->as_matrix().check_ort();
 		
-		std::cout << *t2 ;// std::cout << *sm1;
+		//std::cout << *t2 ;// std::cout << *sm1;
 		
-		std::cout << *t2; 
+		//std::cout << *t2; 
 		t2->change_basis(*sm1); //std::cout << *Q;
 		t3.change_basis(*sm1); //std::cout << *Q;
 		delete Q;
 		delete sm1;
 		delete sm2;
 		//std::cout << *t2;
-		*t2 -= *t0;
-		*t2 *= *t0;
+		*t2 -= *t1;
+		*t2 *= *t1;
 		*t2 += *t1;
 		
 		//matrix_base<double, DIM> mm = sm3->get_ptr();
