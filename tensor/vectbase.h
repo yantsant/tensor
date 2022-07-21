@@ -4,6 +4,8 @@
 
 template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
+//template<typename T, std::size_t N> vect_base<T, N> operator* (const vect_base<T, N >& v, const matrix_base<T, N >& m);
+//template<typename T, std::size_t N> vect_base<T, N> operator* (const matrix_base<T, N >& m, const vect_base<T, N >& v);
 
 template<typename T, size_t N>
 class vect_base // : private std::array<T, N>
@@ -15,14 +17,16 @@ class vect_base // : private std::array<T, N>
 	void _alloc() { _Elem = new std::array<T, N>; };
 	void _reset() { delete _Elem; _Elem = nullptr; };
 public:
+	~vect_base() { _reset(); };
+	explicit vect_base()                    { _alloc();  _Elem->fill((T)0); };
+	explicit vect_base(T val)               { _alloc();  _Elem->fill(val); };
+	explicit vect_base(const _array& _arr)  { _alloc(); *_Elem = _arr;};
+	vect_base(const vect_base&  v) { _alloc(); *_Elem = *v._Elem;}; // copy constructor
+	vect_base(vect_base&& v)       { _Elem = v._Elem; v._Elem = nullptr; }; // move constructor
+
 	      T& operator [](size_t i)          { return (*_Elem)[i]; };
 	const T& operator [](size_t i) const    { return (*_Elem)[i]; };
-	explicit vect_base()                    { _Elem->fill((T)0); };
-	explicit vect_base(T val)               { _Elem->fill(val); };
-	explicit vect_base(_array& _arr)        { *_Elem = _arr;};
 	inline const _array& operator()() const { return *_Elem; };
-	vect_base(const vect_base&  v) { _alloc(); *_Elem = *v._Elem;}; // copy constructor
-	vect_base(vect_base&& v) { _Elem = v._Elem; v._Elem = nullptr; }; // move constructor
 
 	const std::array<T, N>& get_comp() const;
 
@@ -33,7 +37,7 @@ public:
 	inline vect_base& operator= (vect_base&& v) noexcept { _reset(); _Elem = v._Elem; v._Elem = nullptr; return *this; };
 	inline vect_base  operator+ (const vect_base& rhs) const;
 	inline vect_base  operator- (const vect_base& rhs) const;
-	virtual inline T  operator* (const vect_base& v) const;
+	inline         T  operator* (const vect_base& v) const;
 	inline vect_base  operator* (const T& mult) const;
 	inline vect_base  operator/ (const T& div) const;
 	inline vect_base& operator= (const T& val);
@@ -42,8 +46,8 @@ public:
 	inline vect_base& operator+=(const vect_base& rhs);
 	inline vect_base& operator-=(const vect_base& rhs);
 
-	inline virtual vect_base         vector_product(const vect_base& rhs) const;
-	inline virtual matrix_base<T, N>  outer_product(const vect_base& rhs) const;
+	inline vect_base         vector_product(const vect_base& rhs) const;
+	inline matrix_base<T, N>  outer_product(const vect_base& rhs) const;
 
 	virtual inline T   norm() const;
 	inline vect_base   get_normalize() const;
@@ -52,24 +56,25 @@ public:
 
 	friend vect_base<T, N > operator* (const vect_base<T, N >& v, const matrix_base<T, N >& m) {
 		vect_base <T, N> res((T)0);
-		const std::array<std::array<T, N>, N>& matr = m();
 		for (size_t row = 0; row < N; row++)
 			for (size_t col = 0; col < N; col++)
-				res[row] += v[col] * matr[col][row];
+				res[row] += v[col] * m[col][row];
 
 		return res;
 	}
 
 	friend vect_base<T, N > operator* (const matrix_base<T, N >& m, const vect_base<T, N >& v) {
 		vect_base <T, N> res((T)0);
-		const std::array<std::array<T, N>, N>& matr = m();
 		for (size_t row = 0; row < N; row++)
 			for (size_t col = 0; col < N; col++)
-				res[row] += v[col] * matr[row][col];
+				res[row] += v[col] * m[row][col];
 
 		return res;
 	}
 };
+
+
+
 
 template<typename T, size_t N>
 inline vect_base<T, N> vect_base<T,N>::operator- () const {

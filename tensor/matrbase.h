@@ -2,7 +2,6 @@
 #include <random>
 #include <iostream>
 enum class MATRIXINITTYPE{
-	NOINIT,
 	ZERO,
 	INDENT,
 };
@@ -23,6 +22,7 @@ extern const size_t DIM;
 template<typename T, std::size_t N> class matrix_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix_base<T,N>& m);
 template<typename T, std::size_t N> matrix_base<T, N> generate_rand_ort();
+template<typename T, std::size_t N> matrix_base<T, N> transpose();
 
 namespace matrix_generator
 {
@@ -40,19 +40,8 @@ namespace matrix_generator
 };
 
 
-
-//template<typename T, std::size_t N>
-//class matrix_moveable
-//{
-//	std::array<std::array<T, N>, N>*  _array;
-//public:
-//	matrix() {
-//		_array = new std::array<std::array<T, N>, N>;
-//	}
-//};
-
 template<typename T, std::size_t N>
-class matrix_base// : private std::array<std::array<T, N>, N>
+class matrix_base
 {
 	typedef  std::array<std::array<T, N>, N>  _array;
 
@@ -64,10 +53,11 @@ class matrix_base// : private std::array<std::array<T, N>, N>
 protected:
 public:
 	~matrix_base() { _reset(); };
+	explicit matrix_base() {};
 	matrix_base(MATRIXINITTYPE IT);
 	matrix_base(const matrix_base& m);
-	matrix_base(matrix_base&& m) noexcept { _Elem = m._Elem; m._Elem = nullptr; };
 	matrix_base(const std::array<std::array<T, N>, N>& a);
+	matrix_base(matrix_base&& m) noexcept;
 
 	inline       std::array<T, N>& operator [](size_t i)       { return (*_Elem)[i]; };
 	inline const std::array<T, N>& operator [](size_t i) const { return (*_Elem)[i]; };
@@ -78,26 +68,21 @@ public:
 	inline 	matrix_base& operator = (const T& vl);
 	inline  matrix_base& operator = (matrix_base&& m) noexcept;
 	inline  matrix_base& operator = (const matrix_base& rhs);
-	virtual matrix_base  operator + (const matrix_base& m) const;
-	virtual matrix_base  operator - (const matrix_base& m) const;
-	virtual matrix_base  operator * (const matrix_base& m) const;
-	virtual matrix_base  operator * (const T& val) const;
-	virtual matrix_base& operator +=(const matrix_base& m);
-	virtual matrix_base& operator -=(const matrix_base& m);
-	virtual matrix_base& operator *=(const matrix_base& m);
-	virtual matrix_base& operator *=(const T& val);
+	inline  matrix_base  operator + (const matrix_base& m) const;
+	inline  matrix_base  operator - (const matrix_base& m) const;
+	inline  matrix_base  operator * (const matrix_base& m) const;
+	inline  matrix_base  operator * (const T& val) const;
+	inline  matrix_base& operator +=(const matrix_base& m);
+	inline  matrix_base& operator -=(const matrix_base& m);
+	inline  matrix_base& operator *=(const matrix_base& m);
+	inline  matrix_base& operator *=(const T& val);
 
 	bool        check_ort() const;
 	matrix_base transpose() const;
 	matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
 	matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
-	virtual T    convolution(const matrix_base<T, N>& rhs) const;
-
-	friend void transpose(matrix_base& m)	{
-		for (size_t row = 0; row < N; row++)
-			for (size_t col = row + 1; col < N; col++)
-				std::swap(m[row][col], m[col][row]);
-	};
+	inline  T   convolution(const matrix_base<T, N>& rhs) const;
+	friend void transpose(matrix_base& m);
 };
 
 template<typename T, std::size_t N>
@@ -123,7 +108,6 @@ matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) {
 	_alloc();
 	switch (IT)
 	{
-	case MATRIXINITTYPE::NOINIT:		return;
 	case MATRIXINITTYPE::ZERO  :		set_zero();
 		return;
 	case MATRIXINITTYPE::INDENT:
@@ -182,6 +166,11 @@ matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base
 	}
 }
 
+template<typename T, std::size_t N>
+matrix_base<T, N>::matrix_base(matrix_base<T, N>&& m) noexcept {
+	_Elem = m._Elem; 
+	m._Elem = nullptr; 
+};
 
 template<typename T, std::size_t N>
 matrix_base<T, N>& matrix_base<T, N>::move(matrix_base<T, N>&& rhs) {
@@ -213,7 +202,7 @@ matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl) {
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) const {
-	matrix_base<T, N> nhs(MATRIXINITTYPE::NOINIT);
+	matrix_base<T, N> nhs;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
 			nhs[row][col] = (*this)[row][col] + rhs[row][col];
@@ -222,7 +211,7 @@ matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) c
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_base<T, N>::operator - (const matrix_base<T, N>& rhs) const {
-	matrix_base<T, N> nhs(MATRIXINITTYPE::NOINIT);
+	matrix_base<T, N> nhs;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
 			nhs[row][col] = (*this)[row][col] - rhs[row][col];
@@ -247,7 +236,7 @@ matrix_base<T, N>& matrix_base<T, N>::operator -= (const matrix_base<T, N>& rhs)
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_base<T, N>::operator * (const T& val) const {
-	matrix_base<T, N> nhs(MATRIXINITTYPE::NOINIT);
+	matrix_base<T, N> nhs;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
 			nhs[row][col] = (*this)[row][col] * val;
@@ -263,6 +252,13 @@ matrix_base<T, N> matrix_base<T, N>::operator * (const matrix_base<T, N>& rhs) c
 				nhs[row][col] += (*this)[row][i] * rhs[i][col];
 	return nhs;
 }
+
+template<typename T, std::size_t N>
+void transpose(matrix_base<T, N>& m) {
+	for (size_t row = 0; row < N; row++)
+		for (size_t col = row + 1; col < N; col++)
+			std::swap(m[row][col], m[col][row]);
+};
 
 template<typename T, std::size_t N>
 T   matrix_base<T, N>::convolution(const matrix_base<T, N>& rhs) const {

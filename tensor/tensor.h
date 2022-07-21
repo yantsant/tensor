@@ -24,11 +24,11 @@ public:
 	Tensor(const  Tensor&& tens) : _matrix(tens), _handler(tens) {}; // move constructor
 
 	friend std::ostream& operator<< <>(std::ostream& out, const Tensor& t);
-	virtual Tensor& operator = (const Tensor& t);
-	virtual Tensor& operator = (Tensor&& t) noexcept;
-	virtual Tensor  operator + (const Tensor& t) const;
-	virtual Tensor  operator - (const Tensor& t) const;
-	virtual Tensor  operator * (const Tensor& t) const;
+	Tensor& operator = (const Tensor& t);
+	Tensor& operator = (Tensor&& t) noexcept;
+	Tensor  operator + (const Tensor& t) const;
+	Tensor  operator - (const Tensor& t) const;
+	Tensor  operator * (const Tensor& t) const;
 
 	friend  Vector<T, N>  operator * (const Tensor& t, const Vector<T, N>& v)	{
 		return Vector<T, N>(v.comp_at_basis(t.get_basis()) * static_cast<matrix_base<T, N>>(t), t.get_basis());	}
@@ -36,11 +36,11 @@ public:
 	friend  Vector<T, N>  operator * (const Vector<T, N>& v, const Tensor& t)	{
 		return Vector<T, N>(static_cast<matrix_base<T, N>>(t) * v.comp_at_basis(t.get_basis()), t.get_basis());	}
 
-	virtual Tensor& operator +=(const Tensor& t);
-	virtual Tensor& operator -=(const Tensor& t);
-	virtual Tensor& operator *=(const Tensor& t);
+	Tensor& operator +=(const Tensor& t);
+	Tensor& operator -=(const Tensor& t);
+	Tensor& operator *=(const Tensor& t);
 
-	virtual T       convolution(const Tensor<T, N>& rhs) const;
+	T       convolution(const Tensor<T, N>& rhs) const;
 	friend Tensor<T, N> outer_product(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
 };
 
@@ -105,7 +105,7 @@ T   Tensor<T, N>::convolution(const Tensor<T, N>& rhs) const {
 /* return components of this in the target basis m*/
 template<typename T, size_t N>
 matrix_base<T, N> Tensor<T, N>::get_comp_at_basis(const   shared_handler_basis<T, N>& m) const {
-	matrix_base<T, N> res (MATRIXINITTYPE::NOINIT);
+	matrix_base<T, N> res;
 	if (*this == m) {
 		res = static_cast<matrix_base<T, N>>(*this);
 	}
