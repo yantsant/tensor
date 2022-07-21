@@ -22,7 +22,10 @@ public:
 	explicit vect_base(T val)               { _alloc();  _Elem->fill(val); };
 	explicit vect_base(const _array& _arr)  { _alloc(); *_Elem = _arr;};
 	vect_base(const vect_base&  v) { _alloc(); *_Elem = *v._Elem;}; // copy constructor
-	vect_base(vect_base&& v)       { _Elem = v._Elem; v._Elem = nullptr; }; // move constructor
+	vect_base(vect_base&& v)       { 
+		_Elem = v._Elem; 
+		v._Elem = nullptr; 
+	}; // move constructor
 
 	      T& operator [](size_t i)          { return (*_Elem)[i]; };
 	const T& operator [](size_t i) const    { return (*_Elem)[i]; };

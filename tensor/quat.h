@@ -129,7 +129,7 @@ template<typename T>
 inline matrix_base<T, 3> quat<T>  ::get_ort_matrix() const{
 	T wx, wy, wz, xx, yy, yz, xy, xz, zz;
 	std::array<std::array<T, 3>, 3> m;
-	const std::array<T,4>& q = this->get_normalize()();
+	std::array<T,4> q = this->get_normalize()();
 
 	xx = 2.0 * q[1] * q[1];   xy = 2.0 * q[1] * q[2];   xz = 2.0 * q[1] * q[3];
 	yy = 2.0 * q[2] * q[2];   yz = 2.0 * q[2] * q[3];   zz = 2.0 * q[3] * q[3];
