@@ -64,6 +64,9 @@ void tensor_unit_test()
 	std::vector<std::vector<double>> V2(20);
 	V1 = std::move(V2);
 
+	vect_base<double, 40> VV(0.0);
+	VV.normalize();
+	//q1.vector_product(q2);
 	auto mm = matrix_base<double, DIM>(MATRIXINITTYPE::INDENT);
 	shared_handler_basis<double, DIM> rr(mm);
 	//typedef std::shared_ptr<> shared_handler;
@@ -77,6 +80,7 @@ void tensor_unit_test()
 		auto sm1 = new shared_handler_basis<double, DIM>(*R);
 		auto sm2 = new shared_handler_basis<double, DIM>(*Q);
 		// shared_handler_basis<double, DIM> MMX = *sm1; // restricted operation to prevent multiply owning
+		//sm1->as_matrix() *= 2.0;
 		Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 		Tensor<double, DIM>* t2 = new Tensor<double, DIM>(*R, *sm2);

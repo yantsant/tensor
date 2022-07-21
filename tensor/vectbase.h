@@ -4,8 +4,6 @@
 
 template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
-//template<typename T, std::size_t N> vect_base<T, N> operator* (const vect_base<T, N >& v, const matrix_base<T, N >& m);
-//template<typename T, std::size_t N> vect_base<T, N> operator* (const matrix_base<T, N >& m, const vect_base<T, N >& v);
 
 template<typename T, size_t N>
 class vect_base // : private std::array<T, N>
@@ -75,9 +73,6 @@ public:
 		return res;
 	}
 };
-
-
-
 
 template<typename T, size_t N>
 inline vect_base<T, N> vect_base<T,N>::operator- () const {
@@ -178,15 +173,14 @@ std::ostream& operator<<(std::ostream& out, const vect_base<T,N>& a){
 
 template<typename T, size_t N>
 inline vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N >& rhs) const {
-	if (N == 3){
-		const vect_base<T, N>& lhs = *this;
-		vect_base<T, N> res;
-		res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-		res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-		res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
-		return res;
-	}
-	else throw std::length_error("vector_product is implemented only for 3-dimensional vectors.");
+	static_assert(N == 3 && " vector_product is implemented only for 3-dimensional vectors.");
+
+	const vect_base<T, N>& lhs = *this;
+	vect_base<T, N> res;
+	res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
+	res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
+	res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
+	return res;
 }
 
 template<typename T, size_t N>
@@ -206,8 +200,6 @@ const std::array<T, N>& vect_base<T, N >::get_comp() const {
 
 template<typename T, size_t N>
 inline T vect_base<T, N >::operator* (const vect_base<T, N >& v) const {
-	if (N == 0) throw std::length_error("zero length vector!");
-
 	T res = (T)0;
 	for (size_t row = 0; row < N; row++)
 		res += (*this)[row] * v[row];
@@ -224,10 +216,8 @@ inline T    vect_base<T, N >::norm() const {
 template<typename T, size_t N>
 inline void vect_base<T, N>::normalize(vect_base<T, N>& v) {
 	T length = v.norm();
-	if (length > (T)0)
-		v *= (T)1 / length;
-	else
-		throw std::invalid_argument("length of vector is zero");
+	assert(length > (T)0 && "length of vector is zero");
+	v *= (T)1 / length;
 }
 
 

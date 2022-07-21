@@ -23,12 +23,12 @@ protected:
 public:
 	shared_handler_basis(const shared_handler_basis&& sh) : std::shared_ptr<matrix_base<T, N>>(sh) { owner = std::move(sh.owner); };
 	explicit shared_handler_basis(const matrix_base<T, N>& m) : std::shared_ptr<matrix_base<T, N>>(std::make_shared<matrix_base<T, N>>(m)) {
-		if (!m.check_ort()) throw std::invalid_argument("basis matrix is not ortogonal"); // optionally checking of basis
+		assert(m.check_ort() && " basis matrix is not ortogonal"); // optionally checking of basis
 		owner = true;
 	}
 
 	matrix_base<T, N>& as_matrix() { // only creator from matrix_base have access from outer scope, also Tensor/Vector have access  
-		if (!owner) throw std::domain_error("access is not  permitted: called object is not an owner");
+		assert(owner && " access is not permitted: called object is not an owner");
 		return *this->get();
 	}; 
 	/* WARNING : CHANGE Object: move to the target basis m, just basis changes*/

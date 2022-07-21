@@ -19,7 +19,7 @@ public:
 	Vector(const _vector& comp, const  _matrix& basis) : _vector(comp), _handler(basis) {};
 	Vector(const _vector& comp, const _handler& basis) : _vector(comp), _handler(basis) {};
 	Vector(const  Vector&  vect) : _vector((vect)), _handler((vect)) {}; // copy constructor
-	Vector(const  Vector&& vect) : _vector((vect)), _handler((vect)) {}; // move constructor
+	Vector(const  Vector&& vect) noexcept: _vector((vect)), _handler((vect))  {}; // move constructor
 
 	inline Vector  operator - ();
 	inline Vector& operator = (const Vector<T, N>& v);

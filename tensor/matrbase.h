@@ -1,6 +1,8 @@
 #pragma once
 #include <random>
 #include <iostream>
+#include <cassert>
+
 enum class MATRIXINITTYPE{
 	ZERO,
 	INDENT,

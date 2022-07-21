@@ -34,7 +34,7 @@ private:
 
 template<typename T>
 quat<T>::quat() : vect_base<T, 4> ((T)0) {
-	this->set(0, (T)1);
+	(*this)[0]= (T)1;
 }; 
 
 template<typename T>
@@ -69,18 +69,18 @@ quat<T>::quat(const vect_base<T, 4>& v) {
 
 template<typename T>
 inline void quat<T>::set_im(const vect_base<T, 3>& im){
-	this->set(1, im.get(0));
-	this->set(2, im.get(1));
-	this->set(3, im.get(2));
+	(*this)[1] = im[0];
+	(*this)[2] = im[1];
+	(*this)[3] = im[2];
 }
 
 template<typename T>
 inline vect_base<T, 3> quat<T>::get_im() const{
 	vect_base<T, 3> res;
 	const std::array<T, 4>& v = (*this)();
-	res.set(0, v.get(1));
-	res.set(1, v.get(2));
-	res.set(2, v.get(3));
+	res[0] = v[1];
+	res[1] = v[2];
+	res[2] = v[3];
 	return res;
 }
 
