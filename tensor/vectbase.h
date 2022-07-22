@@ -6,25 +6,28 @@ template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
 
 template<typename T, size_t N>
-class vect_base // : private std::array<T, N>
+class vect_base
 {
 	typedef  std::array<T, N>  _array;
 
 	std::array<T, N>* _Elem = nullptr;
 
-	void _alloc() { _Elem = new std::array<T, N>; };
-	void _reset() { delete _Elem; _Elem = nullptr; };
+	void _alloc() { assert(_Elem==nullptr && " vect_base alloc may be a cause of a leaking memory."); _Elem = new std::array<T, N>; };
+	void _reset() { if (_Elem != nullptr) { delete _Elem; _Elem = nullptr; } };
 public:
 	~vect_base() { _reset(); };
 	explicit vect_base()                    { _alloc();  _Elem->fill((T)0); };
 	explicit vect_base(T val)               { _alloc();  _Elem->fill(val); };
 	explicit vect_base(const _array& _arr)  { _alloc(); *_Elem = _arr;};
-	vect_base(const vect_base&  v) { _alloc(); *_Elem = *v._Elem;}; // copy constructor
-	vect_base(vect_base&& v)       { 
-		_Elem = v._Elem; 
-		v._Elem = nullptr; 
-	}; // move constructor
+	vect_base(const vect_base&  v)          { _alloc(); *_Elem = *v._Elem;}; // copy constructor
+	vect_base(vect_base&& v)noexcept { move(static_cast<vect_base&&>(v));}; // move constructor
 
+	vect_base& move(vect_base&& rhs) {
+		_reset();
+		_Elem = rhs._Elem;
+		rhs._Elem = nullptr;
+		return *this;
+	};
 	      T& operator [](size_t i)          { return (*_Elem)[i]; };
 	const T& operator [](size_t i) const    { return (*_Elem)[i]; };
 	inline const _array& operator()() const { return *_Elem; };
@@ -35,7 +38,7 @@ public:
 
 	inline vect_base  operator- () const;
 	inline vect_base& operator= (const vect_base& rhs);
-	inline vect_base& operator= (vect_base&& v) noexcept { _reset(); _Elem = v._Elem; v._Elem = nullptr; return *this; };
+	inline vect_base& operator= (vect_base&& v) noexcept { return move(static_cast<vect_base&&>(v)); };
 	inline vect_base  operator+ (const vect_base& rhs) const;
 	inline vect_base  operator- (const vect_base& rhs) const;
 	inline         T  operator* (const vect_base& v) const;

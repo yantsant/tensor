@@ -50,7 +50,7 @@ class matrix_base
 	std::array<std::array<T, N>, N>* _Elem = nullptr;
 
 	void set_zero();
-	void _alloc() { _Elem = new std::array<std::array<T, N>, N>;};
+	void _alloc() { assert(_Elem == nullptr && " matrix_base alloc may be a cause of a leaking memory."); _Elem = new std::array<std::array<T, N>, N>;};
 	void _reset() { delete _Elem; _Elem = nullptr; };
 protected:
 public:
@@ -80,11 +80,10 @@ public:
 	inline  matrix_base& operator *=(const T& val);
 
 	bool        check_ort() const;
-	matrix_base transpose() const;
-	matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
-	matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
+	inline matrix_base transpose() const;
+	inline matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
+	inline matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
 	inline  T   convolution(const matrix_base<T, N>& rhs) const;
-	friend void transpose(matrix_base& m);
 };
 
 template<typename T, std::size_t N>
@@ -97,7 +96,6 @@ template<typename T, std::size_t N>
 void matrix_base<T, N>::set_zero() {
 	for (auto& row : *_Elem) row.fill((T)0);
 }
-
 
 template<typename T, std::size_t N>
 matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m) {
@@ -125,6 +123,7 @@ matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) {
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_base<T, N>::transpose() const {
+
 	matrix_base<T, N> res(*this);
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = row + 1; col < N; col++)
@@ -169,12 +168,6 @@ matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(matrix_base<T, N>&& m) noexcept {
-	_Elem = m._Elem; 
-	m._Elem = nullptr; 
-};
-
-template<typename T, std::size_t N>
 matrix_base<T, N>& matrix_base<T, N>::move(matrix_base<T, N>&& rhs) {
 	_reset();
 	_Elem = rhs._Elem;
@@ -183,8 +176,13 @@ matrix_base<T, N>& matrix_base<T, N>::move(matrix_base<T, N>&& rhs) {
 };
 
 template<typename T, std::size_t N>
+matrix_base<T, N>::matrix_base(matrix_base<T, N>&& m) noexcept {
+	move(static_cast<matrix_base<T, N>&&>(m));
+};
+
+template<typename T, std::size_t N>
 matrix_base<T, N>& matrix_base<T, N>::operator = (matrix_base<T, N>&& m) noexcept {
-	return matrix_base::move(static_cast<matrix_base<T, N>&&>(m));
+	return move(static_cast<matrix_base<T, N>&&>(m));
 };
 
 template<typename T, std::size_t N>
@@ -254,13 +252,6 @@ matrix_base<T, N> matrix_base<T, N>::operator * (const matrix_base<T, N>& rhs) c
 				nhs[row][col] += (*this)[row][i] * rhs[i][col];
 	return nhs;
 }
-
-template<typename T, std::size_t N>
-void transpose(matrix_base<T, N>& m) {
-	for (size_t row = 0; row < N; row++)
-		for (size_t col = row + 1; col < N; col++)
-			std::swap(m[row][col], m[col][row]);
-};
 
 template<typename T, std::size_t N>
 T   matrix_base<T, N>::convolution(const matrix_base<T, N>& rhs) const {

@@ -10,8 +10,8 @@ template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, c
 template<typename T, std::size_t N> Tensor<T,N> outer_product (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
 
 template<typename T, size_t N>
-class Tensor : private shared_handler_basis<T, N>,
-			   private matrix_base<T, N>
+class Tensor : private matrix_base<T, N>,
+			   private shared_handler_basis<T, N>
 {
 	typedef  matrix_base  <T, N>        _matrix;
 	typedef  shared_handler_basis<T, N> _handler;
@@ -21,7 +21,7 @@ public:
 	Tensor(const _matrix& comp, const _handler& basis) : _matrix(comp), _handler(basis) {};
 	Tensor(const _matrix& comp, const   Tensor& basis) : _matrix(comp), _handler(basis) {};
 	Tensor(const  Tensor&  tens) : _matrix(tens), _handler(tens) {}; // copy constructor
-	Tensor(const  Tensor&& tens) : _matrix(tens), _handler(tens) {}; // move constructor
+	Tensor(Tensor&& tens) noexcept : _matrix(static_cast<_matrix&&>(tens)), _handler(static_cast<_handler&&>(tens)) {}; // move constructor
 
 	friend std::ostream& operator<< <>(std::ostream& out, const Tensor& t);
 	Tensor& operator = (const Tensor& t);
@@ -29,19 +29,17 @@ public:
 	Tensor  operator + (const Tensor& t) const;
 	Tensor  operator - (const Tensor& t) const;
 	Tensor  operator * (const Tensor& t) const;
-
-	friend  Vector<T, N>  operator * (const Tensor& t, const Vector<T, N>& v)	{
-		return Vector<T, N>(v.comp_at_basis(t.get_basis()) * static_cast<matrix_base<T, N>>(t), t.get_basis());	}
-
-	friend  Vector<T, N>  operator * (const Vector<T, N>& v, const Tensor& t)	{
-		return Vector<T, N>(static_cast<matrix_base<T, N>>(t) * v.comp_at_basis(t.get_basis()), t.get_basis());	}
-
 	Tensor& operator +=(const Tensor& t);
 	Tensor& operator -=(const Tensor& t);
 	Tensor& operator *=(const Tensor& t);
 
 	T       convolution(const Tensor<T, N>& rhs) const;
 	friend Tensor<T, N> outer_product(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+	friend  Vector<T, N>  operator * (const Tensor& t, const Vector<T, N>& v) {
+		return Vector<T, N>(v.comp_at_basis(t.get_basis()) * static_cast<matrix_base<T, N>>(t), t.get_basis()); }
+
+	friend  Vector<T, N>  operator * (const Vector<T, N>& v, const Tensor& t) {
+		return Vector<T, N>(static_cast<matrix_base<T, N>>(t) * v.comp_at_basis(t.get_basis()), t.get_basis()); }
 };
 
 template<typename T, size_t N>
@@ -51,17 +49,17 @@ void Tensor<T, N>::change_basis(const _handler& m) {
 }
 
 template<typename T, size_t N>
-Tensor<T, N>& Tensor<T, N>::operator = (Tensor<T, N>&& t) noexcept {
-	matrix_base<T, N>::operator=(static_cast<matrix_base<T, N>&&>(t));// matrix_base<T, N>::move(static_cast<matrix_base<T, N>&&>(t));
-	shared_handler_basis<T, N>::move(static_cast<shared_handler_basis<T, N>&&>(t));
+Tensor<T, N>& Tensor<T, N>::operator = (const Tensor<T, N>& t)  {
+	_matrix ::operator = (static_cast<const _matrix &>(t));
+	_handler::operator = (static_cast<const _handler&>(t));
 	return *this;
 };
 
 template<typename T, size_t N>
-Tensor<T, N>& Tensor<T, N>::operator = (const Tensor<T, N>& t)  {
-	static_cast<matrix_base<T, N>&>(matrix_base<T, N>::operator=(t));
-	static_cast<shared_handler_basis<T, N>&>(shared_handler_basis<T, N>::operator=(t));
-	return *this;
+Tensor<T, N>& Tensor<T, N>::operator =  (Tensor&& t) noexcept {
+	_matrix ::operator = (static_cast<_matrix &&>(t));
+	_handler::operator = (static_cast<_handler&&>(t));
+	return*this;
 };
 
 template<typename T, size_t N>

@@ -6,8 +6,9 @@
 #include "basis.h"
 
 template<typename T, size_t N>
-class Vector : private shared_handler_basis<T, N>,
-	           private vect_base<T, N>
+class Vector : private vect_base<T, N>,
+			   private shared_handler_basis<T, N>
+	           
 {
 	typedef  vect_base    <T, N>          _vector;
 	typedef  matrix_base  <T, N>          _matrix;
@@ -18,11 +19,12 @@ public:
 
 	Vector(const _vector& comp, const  _matrix& basis) : _vector(comp), _handler(basis) {};
 	Vector(const _vector& comp, const _handler& basis) : _vector(comp), _handler(basis) {};
-	Vector(const  Vector&  vect) : _vector((vect)), _handler((vect)) {}; // copy constructor
-	Vector(const  Vector&& vect) noexcept: _vector((vect)), _handler((vect))  {}; // move constructor
+	Vector(const  Vector&  vect)  : _vector(vect), _handler(vect) {}; // copy constructor
+	Vector(Vector&& vect) noexcept: _vector(static_cast<_vector&&>(vect)), _handler(static_cast<_handler&&>(vect))  {}; // move constructor
 
 	inline Vector  operator - ();
 	inline Vector& operator = (const Vector<T, N>& v);
+	inline Vector& operator = (Vector<T, N>&& v) noexcept;
 	inline Vector& operator +=(const Vector<T, N>& v);
 	inline Vector& operator -=(const Vector<T, N>& v);
 	inline Vector  operator + (const Vector<T, N>& v) const;
@@ -60,10 +62,17 @@ Vector<T, N> Vector<T, N>::operator - () {
 
 template<typename T, size_t N>
 Vector<T, N>& Vector<T, N>::operator = (const Vector<T, N>& v) {
-	static_cast<vect_base<T, N>&>(vect_base<T, N>::operator=(v));
-	static_cast<shared_handler_basis<T, N>&>(shared_handler_basis<T, N>::operator=(v));
+	_vector ::operator = (static_cast<const _vector &>(v));
+	_handler::operator = (static_cast<const _handler&>(v));
 	return *this;
-}
+};
+
+template<typename T, size_t N>
+Vector<T, N>& Vector<T, N>::operator =  (Vector&& v) noexcept {
+	_vector ::operator = (static_cast<_vector &&>(v));
+	_handler::operator = (static_cast<_handler&&>(v));
+	return*this;
+};
 
 template<typename T, size_t N>
 Vector<T, N> Vector<T, N>::operator + (const Vector<T, N>& v) const {
