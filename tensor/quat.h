@@ -11,9 +11,9 @@ template<typename T>
 class quat : public vect_base<T, 4>
 {
 public:
-	quat();
-	explicit quat(const quat& q);
-	explicit quat(const vect_base<T, 4>& q);
+	quat() : vect_base<T, 4>((T)0) { (*this)[0] = (T)1; };
+	explicit quat(const quat& q) ;
+	explicit quat(const vect_base<T, 4>& q) : vect_base<T, 4>(q) {};
 	explicit quat(const T& re, const vect_base<T, 3>& im, QUATFORM type);
 
 	void set_im(const vect_base<T, 3>& im);
@@ -30,12 +30,6 @@ public:
 	static inline matrix_base<T, 3> get_ort_matrix(const T& angle, const vect_base<T, 3>& axis);
 private:
 };
-
-
-template<typename T>
-quat<T>::quat() : vect_base<T, 4> ((T)0) {
-	(*this)[0]= (T)1;
-}; 
 
 template<typename T>
 quat<T>::quat(const T& re, const vect_base<T, 3>& im, QUATFORM type) {
@@ -60,11 +54,6 @@ template<typename T>
 quat<T>::quat(const quat& q ) {
 	this->set(0, q.get(0));
 	set_im(q.get_im());
-};
-
-template<typename T>
-quat<T>::quat(const vect_base<T, 4>& v) {
-	(*this) = v;
 };
 
 template<typename T>

@@ -71,7 +71,7 @@ void tensor_unit_test()
 	std::shared_ptr<double> xx = std::make_shared<double>();
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 	shared_handler_basis<double, DIM> MM0(*R);
-	for (size_t i = 0; i < 1000; i++)
+	for (size_t i = 0; i < 100000; i++)
 	{
 		matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 		matrix_base<double, DIM>* Q = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
@@ -98,15 +98,15 @@ void tensor_unit_test()
 		//std::cout << *t2 ;// std::cout << *sm1;
 		
 		//std::cout << *t2; 
-		t2->change_basis(*sm1); //std::cout << *Q;
+		t4.change_basis(*sm1); //std::cout << *Q;
 		t3.change_basis(*sm1); //std::cout << *Q;
 		delete Q;
 		delete sm1;
 		delete sm2;
 		//std::cout << *t2;
-		*t2 -= *t1;
-		*t2 *= *t1;
-		*t2 += *t1;
+		t4 -= *t1;
+		t4 *= *t1;
+		t4 += *t1;
 		
 		//matrix_base<double, DIM> mm = sm3->get_ptr();
 		delete t0;
@@ -122,14 +122,13 @@ void tens_vect_unit_test()
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 	auto sm1 = new  shared_handler_basis<double, DIM>(*R);
 
-	vect_base<double, DIM> v0;
+	vect_base<double, DIM> v0(0.0);
 	v0[0] = 1.0;
 	v0[1] = 1.5;
 	v0[2] = -0.5;
 	Vector<double, 3> V0(v0, *sm1);
 	Vector<double, 3> V1(v0, *sm1);
 	Vector<double, 3> V3 = V0 + V1;
-
 	Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 	Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 	Tensor<double, DIM>  t2 = outer_product(V0, V3); std::cout << t2;
@@ -140,7 +139,7 @@ void vector_unit_test()
 	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
 	auto sm1 = new  shared_handler_basis<double, DIM>(*R);
 	delete R;
-	vect_base<double, DIM> v0;
+	vect_base<double, DIM> v0(0.0);
 	v0[0] = 1.0;
 	v0[1] = 1.5;
 	v0[2] = -0.5;

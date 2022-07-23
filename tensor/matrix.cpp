@@ -13,7 +13,7 @@ template matrix_base<double, 3> matrix_generator::generate_rand_ort();
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_generator::generate_rand_ort() {
-	vect_base<T, 4> qvalue;
+	vect_base<T, 4> qvalue(0.0);
 	for (size_t row = 0; row < 4; row++) qvalue[row] = static_cast<T>(unidistr(gen));
 	quat<T> q(qvalue);
 	return static_cast<matrix_base<T, 3>>(q.get_ort_matrix());
