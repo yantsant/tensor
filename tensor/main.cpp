@@ -129,7 +129,6 @@ void tens_vect_unit_test()
 	Vector<double, 3> V0(v0, *sm1);
 	Vector<double, 3> V1(v0, *sm1);
 	Vector<double, 3> V3 = V0 + V1;
-
 	Tensor<double, DIM>* t0 = new Tensor<double, DIM>(*R, *sm1);
 	Tensor<double, DIM>* t1 = new Tensor<double, DIM>(*R, *sm1);
 	Tensor<double, DIM>  t2 = outer_product(V0, V3); std::cout << t2;
