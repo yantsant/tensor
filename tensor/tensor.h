@@ -103,16 +103,14 @@ T   Tensor<T, N>::convolution(const Tensor<T, N>& rhs) const {
 /* return components of this in the target basis m*/
 template<typename T, size_t N>
 matrix_base<T, N> Tensor<T, N>::get_comp_at_basis(const   shared_handler_basis<T, N>& m) const {
-	matrix_base<T, N> res;
 	if (*this == m) {
-		res = static_cast<matrix_base<T, N>>(*this);
+		return *this;
 	}
 	else {
 		const matrix_base<T, N>& op   = *this->get() * m.get()->transpose();
 		const matrix_base<T, N>& comp = static_cast<const matrix_base<T, N>&> (*this);
-		res = this->transform(TRANSPOSE::TRUE, op, TRANSPOSE::FALSE); // op^t * (*this) * op
+		return this->transform(TRANSPOSE::TRUE, op, TRANSPOSE::FALSE); // op^t * (*this) * op
 	}
-	return res;
 }
 
 template<typename T, size_t N>

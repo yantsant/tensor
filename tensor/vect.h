@@ -42,17 +42,15 @@ void Vector<T, N>::change_basis(const _handler& m) {
 
 template<typename T, size_t N>
 vect_base<T, N> Vector<T, N>::get_comp_at_basis(const   _handler& m) const {
-	vect_base<T, N> res;
 	if (*this == m) {
-		res = static_cast<vect_base<T, N>>(*this);
+		return *this;
 	}
 	else {
 		const matrix_base<T, N>& Rl = *this->get();
 		const matrix_base<T, N>& Rr = m.get()->transpose();
 		const vect_base<T, N>& comp = static_cast<const vect_base<T, N>&> (*this);
-		res = (comp * Rl) * Rr;
+		return (comp * Rl) * Rr;
 	}
-	return res;
 }
 
 template<typename T, size_t N>

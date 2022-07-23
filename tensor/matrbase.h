@@ -42,34 +42,61 @@ namespace matrix_generator
 };
 
 
+template<typename container_type>
+class container
+{
+	void _alloc() { assert(_Elem == nullptr && " vect_base alloc may be a cause of a leaking memory."); _Elem = new container_type; };
+	void _reset() { if (_Elem != nullptr) { delete _Elem; _Elem = nullptr; } };
+	container& _move(container&& rhs) {
+		_reset();
+		_Elem = rhs._Elem;
+		rhs._Elem = nullptr;
+		return *this;
+	};
+protected:
+	container_type* _Elem = nullptr;
+	~container()                           { _reset(); };
+	container ()                           { _alloc(); };
+	container(const container_type& _data) { _alloc(); *(this->_Elem) = _data; };
+	container(const container& _arr)       { _alloc(); *(this->_Elem) = *(_arr._Elem); };
+	container(container&& c)noexcept       { _move(static_cast<container&&>(c)); }; // move constructor
+public:
+	inline const container_type& operator()() const       { return *_Elem; };
+	inline container& operator= (const container& rhs)    { *this->_Elem = *rhs._Elem; return *this; };
+	inline container& operator= (container&& c) noexcept  { return _move(static_cast<container&&>(c)); };
+};
+
+
+
 template<typename T, std::size_t N>
-class matrix_base
+class matrix_base : public container <std::array<std::array<T, N>, N>>
 {
 	typedef  std::array<std::array<T, N>, N>  _array;
+	typedef  container <_array> _cont;
 
-	std::array<std::array<T, N>, N>* _Elem = nullptr;
-
-	void set_zero();
-	void _alloc() { assert(_Elem == nullptr && " matrix_base alloc may be a cause of a leaking memory."); _Elem = new std::array<std::array<T, N>, N>;};
-	void _reset() { delete _Elem; _Elem = nullptr; };
+	virtual void set_zero() ;
+	matrix_base() : _cont() {};
 protected:
 public:
-	~matrix_base() { _reset(); };
-	explicit matrix_base() {};
+	~matrix_base() { };
+	matrix_base(const _array& _arr)      : _cont(_arr) { };
+	matrix_base(const matrix_base& m)    : _cont(static_cast<const _cont&>(m)) { }; // copy constructor
+	matrix_base(matrix_base&& m)noexcept : _cont(static_cast<_cont&&>(m)) { };      // move constructor
 	matrix_base(MATRIXINITTYPE IT);
-	matrix_base(const matrix_base& m);
-	matrix_base(const std::array<std::array<T, N>, N>& a);
-	matrix_base(matrix_base&& m) noexcept;
 
-	inline       std::array<T, N>& operator [](size_t i)       { return (*_Elem)[i]; };
-	inline const std::array<T, N>& operator [](size_t i) const { return (*_Elem)[i]; };
-	inline const _array& operator()() const { return *_Elem; };
+	inline       std::array<T, N>& operator [](size_t i)       { return (*this->_Elem)[i]; };
+	inline const std::array<T, N>& operator [](size_t i) const { return (*this->_Elem)[i]; };
 
 	friend std::ostream& operator<< <>(std::ostream& out, const matrix_base& a);
-	inline  matrix_base& move(matrix_base&& rhs);
-	inline 	matrix_base& operator = (const T& vl);
-	inline  matrix_base& operator = (matrix_base&& m) noexcept;
-	inline  matrix_base& operator = (const matrix_base& rhs);
+	inline matrix_base& operator= (const matrix_base& rhs) {
+		container<_array>::operator = (static_cast<const container<_array>&>(rhs));
+		return *this;
+	}
+	inline matrix_base& operator= (matrix_base&& rhs) noexcept {
+		container<_array>::operator = (static_cast<container<_array>&&>(rhs));
+		return *this;
+	}
+
 	inline  matrix_base  operator + (const matrix_base& m) const;
 	inline  matrix_base  operator - (const matrix_base& m) const;
 	inline  matrix_base  operator * (const matrix_base& m) const;
@@ -87,25 +114,13 @@ public:
 };
 
 template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(const std::array<std::array<T, N>, N>& a) {
-	_alloc();
-	static_cast<std::array<std::array<T, N>, N>&>(*_Elem) = a;
-}
-
-template<typename T, std::size_t N>
 void matrix_base<T, N>::set_zero() {
-	for (auto& row : *_Elem) row.fill((T)0);
+	for (auto& row : *this->_Elem) row.fill((T)0);
 }
 
 template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(const matrix_base<T, N>& m) {
-	_alloc();
-	*_Elem = *m._Elem;
-};
+matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) : _cont() {
 
-template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(MATRIXINITTYPE IT) {
-	_alloc();
 	switch (IT)
 	{
 	case MATRIXINITTYPE::ZERO  :		set_zero();
@@ -166,39 +181,6 @@ matrix_base<T, N> matrix_base<T, N>::transform(TRANSPOSE left, const matrix_base
 		else                			return opt * (*this) * op;
 	}
 }
-
-template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::move(matrix_base<T, N>&& rhs) {
-	_reset();
-	_Elem = rhs._Elem;
-	rhs._Elem = nullptr;
-	return *this;
-};
-
-template<typename T, std::size_t N>
-matrix_base<T, N>::matrix_base(matrix_base<T, N>&& m) noexcept {
-	move(static_cast<matrix_base<T, N>&&>(m));
-};
-
-template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator = (matrix_base<T, N>&& m) noexcept {
-	return move(static_cast<matrix_base<T, N>&&>(m));
-};
-
-template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator = (const matrix_base<T, N>& rhs) {
-	static_cast<std::array<std::array<T, N>, N>&>(*_Elem) = static_cast<const std::array<std::array<T, N>, N>&>(*rhs._Elem);
-	return *this;
-}
-
-template<typename T, std::size_t N>
-matrix_base<T, N>& matrix_base<T, N>::operator = (const T& vl) {
-	T value = (T)vl;
-	for (size_t row = 0; row < N; row++)
-		for (size_t col = 0; col < N; col++)
-			(*this)[row][col] = value;
-	return (*this);
-};
 
 template<typename T, std::size_t N>
 matrix_base<T, N> matrix_base<T, N>::operator + (const matrix_base<T, N>& rhs) const {

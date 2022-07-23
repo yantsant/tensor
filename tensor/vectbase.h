@@ -6,39 +6,33 @@ template<typename T, std::size_t N> class vect_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const vect_base<T, N>& v);
 
 template<typename T, size_t N>
-class vect_base
+class vect_base : public container <std::array<T, N>>
 {
 	typedef  std::array<T, N>  _array;
-
-	std::array<T, N>* _Elem = nullptr;
-
-	void _alloc() { assert(_Elem==nullptr && " vect_base alloc may be a cause of a leaking memory."); _Elem = new std::array<T, N>; };
-	void _reset() { if (_Elem != nullptr) { delete _Elem; _Elem = nullptr; } };
+	typedef container <std::array<T, N>> _cont;
+	vect_base() : _cont() {  };
+protected:
 public:
-	~vect_base() { _reset(); };
-	explicit vect_base()                    { _alloc();  _Elem->fill((T)0); };
-	explicit vect_base(T val)               { _alloc();  _Elem->fill(val); };
-	explicit vect_base(const _array& _arr)  { _alloc(); *_Elem = _arr;};
-	vect_base(const vect_base&  v)          { _alloc(); *_Elem = *v._Elem;}; // copy constructor
-	vect_base(vect_base&& v)noexcept { move(static_cast<vect_base&&>(v));}; // move constructor
+	~vect_base() { };
+	vect_base(T val)                 : _cont()  { this->_Elem->fill(val); };
+	vect_base(const _array& _arr)    : _cont(static_cast<const _cont&>(_arr)) { };
+	vect_base(const vect_base&  v)   : _cont(static_cast<const _cont& >(v))   { }; // copy constructor
+	vect_base(vect_base&& v)noexcept : _cont(static_cast<_cont&&>(v))         { }; // move constructor
 
-	vect_base& move(vect_base&& rhs) {
-		_reset();
-		_Elem = rhs._Elem;
-		rhs._Elem = nullptr;
-		return *this;
-	};
-	      T& operator [](size_t i)          { return (*_Elem)[i]; };
-	const T& operator [](size_t i) const    { return (*_Elem)[i]; };
-	inline const _array& operator()() const { return *_Elem; };
-
-	const std::array<T, N>& get_comp() const;
+	      T& operator [](size_t i)          { return (*this->_Elem)[i]; };
+	const T& operator [](size_t i) const    { return (*this->_Elem)[i]; };
 
 	friend std::ostream& operator<< <>(std::ostream& out, const vect_base& a);
 
+	inline vect_base& operator= (const vect_base& rhs)	{
+		container<_array>::operator = (static_cast<const container<_array>&>(rhs));
+		return *this;
+	}
+	inline vect_base& operator= (vect_base&& rhs) noexcept {
+		container<_array>::operator = (static_cast<container<_array>&& >(rhs));
+		return *this;
+	}
 	inline vect_base  operator- () const;
-	inline vect_base& operator= (const vect_base& rhs);
-	inline vect_base& operator= (vect_base&& v) noexcept { return move(static_cast<vect_base&&>(v)); };
 	inline vect_base  operator+ (const vect_base& rhs) const;
 	inline vect_base  operator- (const vect_base& rhs) const;
 	inline         T  operator* (const vect_base& v) const;
@@ -77,6 +71,7 @@ public:
 	}
 };
 
+
 template<typename T, size_t N>
 inline vect_base<T, N> vect_base<T,N>::operator- () const {
 	vect_base<T, N> res;
@@ -85,13 +80,6 @@ inline vect_base<T, N> vect_base<T,N>::operator- () const {
 	return res;
 };
 
-template<typename T, size_t N>
-inline vect_base<T, N>& vect_base<T, N>::operator= (const vect_base& rhs) {
-	vect_base<T, N> res;
-	for (size_t row = 0; row < N; row++)
-		(*this)[row] = rhs[row];
-	return *this;
-};
 
 template<typename T, size_t N>
 inline vect_base<T, N> vect_base<T, N>::operator+ (const vect_base& rhs) const {
@@ -194,11 +182,6 @@ inline matrix_base<T, N> vect_base<T, N >::outer_product(const vect_base<T, N >&
 		for (size_t col = 0; col < N; col++)
 			res[row][col] = lhs[row] * rhs[col];
 	return static_cast<matrix_base<T, N>> (res);
-}
-
-template<typename T, size_t N>
-const std::array<T, N>& vect_base<T, N >::get_comp() const {
-	return *this;
 }
 
 template<typename T, size_t N>
