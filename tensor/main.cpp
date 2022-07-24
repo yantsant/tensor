@@ -146,6 +146,14 @@ void vector_unit_test()
 }
 int main()
 {
+	std::array<int, 10> v{ 0 };
+	std::cout << "vector adresses \n";
+	for (auto& x : v)
+		std::cout << &x << std::endl;
+	std::array<std::array<int, 1>, 10> m{0};
+	std::cout << "vector matrix \n";
+	for (auto& x : m)
+		std::cout << &x << std::endl;
 	vector_unit_test();
 	tensor_unit_test();
 	matrix_unit_test();
