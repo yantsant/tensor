@@ -1,5 +1,5 @@
 #pragma once
-#include <array>
+#include "container.h"
 #include "matrbase.h"
 
 template<typename T, std::size_t N> class vect_base;
