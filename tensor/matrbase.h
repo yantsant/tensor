@@ -1,7 +1,6 @@
 #pragma once
 #include <random>
-#include <iostream>
-#include <cassert>
+#include "container.h"
 
 enum class MATRIXINITTYPE{
 	ZERO,
@@ -25,48 +24,6 @@ template<typename T, std::size_t N> class matrix_base;
 template<typename T, std::size_t N> std::ostream& operator<< (std::ostream& o, const matrix_base<T,N>& m);
 template<typename T, std::size_t N> matrix_base<T, N> generate_rand_ort();
 template<typename T, std::size_t N> matrix_base<T, N> transpose();
-
-namespace matrix_generator
-{
-	template<typename T, std::size_t N>
-	matrix_base<T, N> generate_rand_ort();
-
-	template<typename T, std::size_t N>
-	matrix_base<T, N> generate_rand() {
-		std::array<std::array<T, N>, N> a;
-		for (size_t row = 0; row < N; row++)
-			for (size_t col = 0; col < N; col++)
-				a[row][col] = static_cast<T>(unidistr(gen));
-		return matrix_base<T, N>(a);
-	};
-};
-
-
-template<typename container_type>
-class container
-{
-	void _alloc() { assert(_Elem == nullptr && " vect_base alloc may be a cause of a leaking memory."); _Elem = new container_type; };
-	void _reset() { if (_Elem != nullptr) { delete _Elem; _Elem = nullptr; } };
-	container& _move(container&& rhs) {
-		_reset();
-		_Elem = rhs._Elem;
-		rhs._Elem = nullptr;
-		return *this;
-	};
-protected:
-	container_type* _Elem = nullptr;
-	~container()                           { _reset(); };
-	container ()                           { _alloc(); };
-	container(const container_type& _data) { _alloc(); *(this->_Elem) = _data; };
-	container(const container& _arr)       { _alloc(); *(this->_Elem) = *(_arr._Elem); };
-	container(container&& c)noexcept       { _move(static_cast<container&&>(c)); }; // move constructor
-public:
-	inline const container_type& operator()() const       { return *_Elem; };
-	inline container& operator= (const container& rhs)    { *this->_Elem = *rhs._Elem; return *this; };
-	inline container& operator= (container&& c) noexcept  { return _move(static_cast<container&&>(c)); };
-};
-
-
 
 template<typename T, std::size_t N>
 class matrix_base : public container <std::array<std::array<T, N>, N>>
@@ -111,6 +68,21 @@ public:
 	inline matrix_base scal(TRANSPOSE left, const matrix_base& rhs, TRANSPOSE right) const;
 	inline matrix_base transform(TRANSPOSE left, const matrix_base& op, TRANSPOSE right) const;
 	inline  T   convolution(const matrix_base<T, N>& rhs) const;
+};
+
+namespace matrix_generator
+{
+	template<typename T, std::size_t N>
+	matrix_base<T, N> generate_rand_ort();
+
+	template<typename T, std::size_t N>
+	matrix_base<T, N> generate_rand() {
+		std::array<std::array<T, N>, N> a;
+		for (size_t row = 0; row < N; row++)
+			for (size_t col = 0; col < N; col++)
+				a[row][col] = static_cast<T>(unidistr(gen));
+		return matrix_base<T, N>(a);
+	};
 };
 
 template<typename T, std::size_t N>
@@ -241,7 +213,7 @@ T   matrix_base<T, N>::convolution(const matrix_base<T, N>& rhs) const {
 	const matrix_base<T, N>& lhs = *this;
 	for (size_t row = 0; row < N; row++)
 		for (size_t col = 0; col < N; col++)
-			res += lhs[row][col] * rhs[row][col];
+			res += lhs[row][col] * rhs[col][row];
 	return res;
 }
 
