@@ -144,16 +144,22 @@ void vector_unit_test()
 	//VV.normalize();
 	return;
 }
+
 int main()
 {
-	std::array<int, 10> v{ 0 };
-	std::cout << "vector adresses \n";
-	for (auto& x : v)
-		std::cout << &x << std::endl;
-	std::array<std::array<int, 1>, 10> m{0};
-	std::cout << "vector matrix \n";
-	for (auto& x : m)
-		std::cout << &x << std::endl;
+	auto dimsd = new std::vector<size_t>[12];
+	std::vector<size_t> dims;
+	dims.push_back(3);
+	dims.push_back(3);
+	dims.push_back(3);
+	auto cc = containerN<int> (dims);
+	auto a = std::make_unique<double[]>(6);
+	container2d<double, 10, 10> c;
+	container1d<double, 10> row = c[5];
+	auto x = row[2];
+	for (int i = 0; i < 10; i++)
+		for (int j = 0; j < 10; j++)
+			c[i][j] = i + j; //Access array element at index
 	vector_unit_test();
 	tensor_unit_test();
 	matrix_unit_test();
