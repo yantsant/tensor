@@ -3,7 +3,7 @@
 #include <random>
 #include <iostream>
 #include <cassert>
-
+#include <utility>
 
 template<typename container_type>
 class container
@@ -26,8 +26,8 @@ protected:
 	std::unique_ptr<container_type> _Elem;
 	~container()                           { _reset(); };
 	container ()                           { _alloc(); };
-	container(const container_type& _data) { _alloc(); *this->_Elem.get() = _data; };
-	container(const container& rhs)        { _alloc(); _copy(rhs); };
+	explicit container(const container_type& _data)  { _alloc(); *this->_Elem.get() = _data; };
+	explicit container(const container& rhs)      { _alloc(); _copy(rhs); };
 	container(container&& c)noexcept       { _move(static_cast<container&&>(c)); }; // move constructor
 public:
 	inline const container_type& operator()() const       { return *_Elem.get(); };

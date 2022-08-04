@@ -80,7 +80,8 @@ inline T quat<T>::re() const{
 
 template<typename T>
 inline quat<T>& quat<T>::operator = (const vect_base<T, 4>& v){
-	return static_cast<quat<T>&>(vect_base<T, 4>::operator=(v));
+	static_cast<quat<T>&>(vect_base<T, 4>::operator=(v));
+	return *this;
 }
 
 template<typename T>

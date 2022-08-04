@@ -144,8 +144,42 @@ void vector_unit_test()
 	//VV.normalize();
 	return;
 }
-int main()
-{
+
+
+
+class A {
+public:
+	A() {
+		return;
+	}
+	virtual void print(bool w = false) {
+		std::cout << "A \n";
+	}
+};
+
+class B : public A {
+public:
+	B() {
+		return;
+	}
+	virtual void print(bool w = true) override {
+		if (w)
+		std::cout << "B \n";
+	}
+};
+
+int foo(int&& x) {
+	int y = x + 2;
+	return y;
+}
+int main(){
+	int y = foo(3);
+	A a;
+	B b;
+	A* pb = &b;
+	b.print();
+	pb->print();
+
 	vector_unit_test();
 	tensor_unit_test();
 	matrix_unit_test();
