@@ -14,9 +14,9 @@ class vect_base : public container <std::array<T, N>>
 protected:
 public:
 	~vect_base() { };
-	vect_base(T val)                 : _cont()  { this->_Elem->fill(val); };
-	vect_base(const _array& _arr)    : _cont(static_cast<const _cont&>(_arr)) { };
-	vect_base(const vect_base&  v)   : _cont(static_cast<const _cont& >(v))   { }; // copy constructor
+	explicit vect_base(T val)                 : _cont()  { this->_Elem->fill(val); };
+	explicit vect_base(const _array& _arr)    : _cont(static_cast<const _cont&>(_arr)) { };
+	explicit vect_base(const vect_base&  v)   : _cont(static_cast<const _cont& >(v))   { }; // copy constructor
 	vect_base(vect_base&& v)noexcept : _cont(static_cast<_cont&&>(v))         { }; // move constructor
 
 	      T& operator [](size_t i)          { return (*this->_Elem)[i]; };

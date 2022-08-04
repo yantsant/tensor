@@ -145,21 +145,41 @@ void vector_unit_test()
 	return;
 }
 
-int main()
-{
-	auto dimsd = new std::vector<size_t>[12];
-	std::vector<size_t> dims;
-	dims.push_back(3);
-	dims.push_back(3);
-	dims.push_back(3);
-	auto cc = containerN<int> (dims);
-	auto a = std::make_unique<double[]>(6);
-	container2d<double, 10, 10> c;
-	container1d<double, 10> row = c[5];
-	auto x = row[2];
-	for (int i = 0; i < 10; i++)
-		for (int j = 0; j < 10; j++)
-			c[i][j] = i + j; //Access array element at index
+
+
+class A {
+public:
+	A() {
+		return;
+	}
+	virtual void print(bool w = false) {
+		std::cout << "A \n";
+	}
+};
+
+class B : public A {
+public:
+	B() {
+		return;
+	}
+	virtual void print(bool w = true) override {
+		if (w)
+		std::cout << "B \n";
+	}
+};
+
+int foo(int&& x) {
+	int y = x + 2;
+	return y;
+}
+int main(){
+	int y = foo(3);
+	A a;
+	B b;
+	A* pb = &b;
+	b.print();
+	pb->print();
+
 	vector_unit_test();
 	tensor_unit_test();
 	matrix_unit_test();
