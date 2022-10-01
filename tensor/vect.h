@@ -58,7 +58,7 @@ void Vector<T, N>::change_basis(const _handler& m) {
 template<typename T, size_t N>
 vect_base<T, N> Vector<T, N>::get_comp_at_basis(const   _handler& m) const {
 	if (*this == m) {
-		return *this;
+		return static_cast<vect_base<T, N>> (*this);
 	}
 	else {
 		const matrix_base<T, N>& Rl = *this->get();

@@ -20,7 +20,7 @@ public:
 	matrix_base<T, N> get_comp_at_basis(const _handler& m) const; // calc comp of this at basis
 	Tensor(const _matrix& comp, const _handler& basis) : _matrix(comp), _handler(basis) {};
 	Tensor(const _matrix& comp, const   Tensor& basis) : _matrix(comp), _handler(basis) {};
-	Tensor(const  Tensor&  tens) : _matrix(tens), _handler(tens) {}; // copy constructor
+	explicit Tensor(const  Tensor&  tens) : _matrix(tens), _handler(tens) {}; // copy constructor
 	Tensor(Tensor&& tens) noexcept : _matrix(static_cast<_matrix&&>(tens)), _handler(static_cast<_handler&&>(tens)) {}; // move constructor
 
 	friend std::ostream& operator<< <>(std::ostream& out, const Tensor& t);
@@ -104,7 +104,7 @@ T   Tensor<T, N>::convolution(const Tensor<T, N>& rhs) const {
 template<typename T, size_t N>
 matrix_base<T, N> Tensor<T, N>::get_comp_at_basis(const   shared_handler_basis<T, N>& m) const {
 	if (*this == m) {
-		return *this;
+		return static_cast<matrix_base<T, N>> (*this);
 	}
 	else {
 		matrix_base<T, N> op   = *this->get() * m.get()->transpose();

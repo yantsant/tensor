@@ -31,15 +31,15 @@ class matrix_base : public container <std::array<std::array<T, N>, N>>
 	typedef  std::array<std::array<T, N>, N>  _array;
 	typedef  container <_array> _cont;
 
-	virtual void set_zero() ;
+	void set_zero();
 	matrix_base() : _cont() {};
 protected:
 public:
 	~matrix_base() { };
-	matrix_base(const _array& _arr)      : _cont(_arr) { };
-	matrix_base(const matrix_base& m)    : _cont(static_cast<const _cont&>(m)) { }; // copy constructor
+	explicit matrix_base(const _array& _arr)       : _cont(_arr) { };
+	explicit matrix_base(const matrix_base& m)     : _cont(static_cast<const _cont&>(m)) { }; // copy constructor
 	matrix_base(matrix_base&& m)noexcept : _cont(static_cast<_cont&&>(m)) { };      // move constructor
-	matrix_base(MATRIXINITTYPE IT);
+	explicit matrix_base(MATRIXINITTYPE IT) ;
 
 	inline       std::array<T, N>& operator [](size_t i)       { return (*this->_Elem)[i]; };
 	inline const std::array<T, N>& operator [](size_t i) const { return (*this->_Elem)[i]; };
