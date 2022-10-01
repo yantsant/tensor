@@ -123,33 +123,39 @@ void tens_vect_unit_test()
 
 void vector_unit_test()
 {
-	matrix_base<double, DIM>* R = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
-	auto sm1 = new  shared_handler_basis<double, DIM>(*R);
-	delete R;
+	matrix_base<double, DIM>* R1 = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
+	matrix_base<double, DIM>* R2 = new matrix_base<double, DIM>(matrix_generator::generate_rand_ort<double, DIM>());
+	auto sm1 = new  shared_handler_basis<double, DIM>(*R1);
+	auto sm2 = new  shared_handler_basis<double, DIM>(*R2);
+	delete R1;
+	delete R2;
 	vect_base<double, DIM> v0(0.0);
 	v0[0] = 1.0;
 	v0[1] = 1.5;
 	v0[2] = -0.5;
 	Vector<double, 3> V0(v0, *sm1);
-	Vector<double, 3> V1(v0, *sm1);
+	Vector<double, 3> V1(v0, *sm2);
 	{
 		Vector<double, 3> V3 = V0 + V1;
 		Vector<double, 3> V4 = V0 - V1;
 		auto V5 = V0 * V1;
 	}
 	Vector<double, 3> V3 = std::move(V0);
-	V3 = std::move(V1);
+	//V3 = std::move(V1);
 	delete sm1;
+	std::cout << V3 << " " << V1;
+	//Vector<double, DIM>  V4 = vector_product(V3, V1);
+	std::cout << vector_product(V3, V1);
 	//vect_base<double, 40> VV(0.0);
 	//VV.normalize();
 	return;
 }
 int main()
 {
+	tens_vect_unit_test();
 	vector_unit_test();
 	tensor_unit_test();
 	matrix_unit_test();
-	tens_vect_unit_test();
 
 	return 0;
 }

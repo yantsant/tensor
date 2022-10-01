@@ -35,10 +35,10 @@ public:
 
 	T       convolution(const Tensor<T, N>& rhs) const;
 	friend Tensor<T, N> outer_product(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-	friend  Vector<T, N>  operator * (const Tensor& t, const Vector<T, N>& v) {
+	friend Vector<T, N> operator * (const Tensor& t, const Vector<T, N>& v) {
 		return Vector<T, N>(v.comp_at_basis(t.get_basis()) * static_cast<matrix_base<T, N>>(t), t.get_basis()); }
 
-	friend  Vector<T, N>  operator * (const Vector<T, N>& v, const Tensor& t) {
+	friend Vector<T, N>  operator * (const Vector<T, N>& v, const Tensor& t) {
 		return Vector<T, N>(static_cast<matrix_base<T, N>>(t) * v.comp_at_basis(t.get_basis()), t.get_basis()); }
 };
 
@@ -107,7 +107,7 @@ matrix_base<T, N> Tensor<T, N>::get_comp_at_basis(const   shared_handler_basis<T
 		return *this;
 	}
 	else {
-		const matrix_base<T, N>& op   = *this->get() * m.get()->transpose();
+		matrix_base<T, N> op   = *this->get() * m.get()->transpose();
 		const matrix_base<T, N>& comp = static_cast<const matrix_base<T, N>&> (*this);
 		return this->transform(TRANSPOSE::TRUE, op, TRANSPOSE::FALSE); // op^t * (*this) * op
 	}
@@ -115,16 +115,16 @@ matrix_base<T, N> Tensor<T, N>::get_comp_at_basis(const   shared_handler_basis<T
 
 template<typename T, size_t N>
 Tensor<T, N> outer_product(const Vector<T, N>& _lhs, const Vector<T, N>& _rhs){
-	const vect_base<T, N>& lhs = _lhs.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
-	const vect_base<T, N>& rhs = _rhs.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
-	matrix_base  <T, N>  m = lhs.outer_product(rhs);
+	vect_base<T, N> lhs = _lhs.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
+	vect_base<T, N> rhs = _rhs.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
+	matrix_base  <T, N> m = lhs.outer_product(rhs);
 	return Tensor<T, N>(m, GLOBAL_DEFAULT_BASIS<T, N>);
 }
 
 // output component of Tensor at GLOBAL_DEFAULT_BASIS basis
 template<typename T, std::size_t N>
 std::ostream& operator<<(std::ostream& out, const Tensor<T, N>& t) {
-	const matrix_base<T, N>& m = t.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
+	matrix_base<T, N> m = t.get_comp_at_basis(GLOBAL_DEFAULT_BASIS<T, N>);
 	out << m;
 	return out;
 };

@@ -10,8 +10,8 @@ class vect_base : public container <std::array<T, N>>
 {
 	typedef  std::array<T, N>  _array;
 	typedef container <std::array<T, N>> _cont;
-	vect_base() : _cont() {  };
 protected:
+	vect_base() : _cont() { this->_Elem->fill(T()); };
 public:
 	~vect_base() { };
 	vect_base(T val)                 : _cont()  { this->_Elem->fill(val); };
@@ -44,7 +44,7 @@ public:
 	inline vect_base& operator+=(const vect_base& rhs);
 	inline vect_base& operator-=(const vect_base& rhs);
 
-	inline vect_base         vector_product(const vect_base& rhs) const;
+	//static inline vect_base   vector_product(const vect_base& lrhs, const vect_base& rhs);
 	inline matrix_base<T, N>  outer_product(const vect_base& rhs) const;
 
 	virtual inline T   norm() const;
@@ -156,22 +156,10 @@ inline vect_base<T, N>& vect_base<T, N>::operator -=(const vect_base& rhs) {
 
 template<typename T, size_t N>
 std::ostream& operator<<(std::ostream& out, const vect_base<T,N>& a){
-	for (auto row : a)
-		out << row << " ";
+	for (size_t row = 0; row < N; row++)
+		out << a[row] << " ";
 	out << "\n";
 	return out;
-}
-
-template<typename T, size_t N>
-inline vect_base<T, N> vect_base<T, N >::vector_product(const vect_base<T, N >& rhs) const {
-	static_assert(N == 3 && " vector_product is implemented only for 3-dimensional vectors.");
-
-	const vect_base<T, N>& lhs = *this;
-	vect_base<T, N> res;
-	res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-	res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-	res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
-	return res;
 }
 
 template<typename T, size_t N>
